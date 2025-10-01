@@ -1,6 +1,6 @@
 {
   "name": "gmaps-kit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "An open-source toolkit around the Google Maps JavaScript SDK",
   "private": true,
   "workspaces": [

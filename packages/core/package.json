@@ -1,6 +1,6 @@
 {
   "name": "@gmaps-kit/core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework-agnostic core utilities for Google Maps JavaScript SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
