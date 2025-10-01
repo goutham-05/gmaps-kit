@@ -3,7 +3,7 @@
  * Reference: https://developers.google.com/maps/documentation/places/web-service
  */
 
-const DEFAULT_BASE_URL = 'https://maps.googleapis.com/maps/api/place';
+const DEFAULT_BASE_URL = '/api/places';
 
 export type PlacesApiStatus =
   | 'OK'
@@ -312,7 +312,8 @@ export class PlacesClient {
   private readonly retryConfig: Required<PlacesRetryConfig>;
 
   constructor(options: PlacesClientOptions) {
-    const fetchCandidate = options.fetchImpl ?? (globalThis.fetch as typeof fetch | undefined);
+    const fetchCandidate =
+      options.fetchImpl ?? (globalThis.fetch as typeof fetch | undefined);
 
     if (!fetchCandidate) {
       throw new Error(
@@ -322,14 +323,15 @@ export class PlacesClient {
 
     this.apiKey = options.apiKey;
     this.baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
-    this.fetchImpl = fetchCandidate;
+    // Bind the fetch function to prevent "Illegal invocation" errors
+    this.fetchImpl = fetchCandidate.bind(globalThis);
     this.defaultLanguage = options.language;
     this.defaultRegion = options.region;
     this.defaultRequestInit = options.requestInit;
     this.channel = options.channel;
     this.timeoutMs = options.timeoutMs;
-    const retryStatuses: PlacesRetryStatus[] =
-      options.retryConfig?.retryStatuses ?? ['UNKNOWN_ERROR', 'OVER_QUERY_LIMIT'];
+    const retryStatuses: PlacesRetryStatus[] = options.retryConfig
+      ?.retryStatuses ?? ['UNKNOWN_ERROR', 'OVER_QUERY_LIMIT'];
     this.retryConfig = {
       retries: options.retryConfig?.retries ?? 0,
       delayMs: options.retryConfig?.delayMs ?? 1000,
@@ -341,20 +343,25 @@ export class PlacesClient {
   async findPlaceFromText(
     request: PlacesFindPlaceRequest
   ): Promise<PlacesFindPlaceResponse> {
-    const response = await this.get<PlacesFindPlaceResponse>('findplacefromtext', {
-      input: request.input,
-      inputtype: request.inputType,
-      fields: this.serializeFields(request.fields),
-      language: request.language ?? this.defaultLanguage,
-      region: request.region ?? this.defaultRegion,
-      sessiontoken: request.sessionToken,
-      locationbias: this.serializeLocationBias(request.locationBias),
-    });
+    const response = await this.get<PlacesFindPlaceResponse>(
+      'findplacefromtext',
+      {
+        input: request.input,
+        inputtype: request.inputType,
+        fields: this.serializeFields(request.fields),
+        language: request.language ?? this.defaultLanguage,
+        region: request.region ?? this.defaultRegion,
+        sessiontoken: request.sessionToken,
+        locationbias: this.serializeLocationBias(request.locationBias),
+      }
+    );
 
     return response;
   }
 
-  async textSearch(request: PlacesTextSearchRequest): Promise<PlacesTextSearchResponse> {
+  async textSearch(
+    request: PlacesTextSearchRequest
+  ): Promise<PlacesTextSearchResponse> {
     const response = await this.get<PlacesTextSearchResponse>('textsearch', {
       query: request.query,
       location: this.serializeLatLng(request.location),
@@ -371,7 +378,10 @@ export class PlacesClient {
     return response;
   }
 
-  async textSearchNextPage(pagetoken: string, delayMs: number = DEFAULT_NEXT_PAGE_DELAY_MS): Promise<PlacesTextSearchResponse> {
+  async textSearchNextPage(
+    pagetoken: string,
+    delayMs: number = DEFAULT_NEXT_PAGE_DELAY_MS
+  ): Promise<PlacesTextSearchResponse> {
     await this.delay(delayMs);
     return this.get<PlacesTextSearchResponse>('textsearch', { pagetoken });
   }
@@ -381,36 +391,46 @@ export class PlacesClient {
   ): Promise<PlacesNearbySearchResponse> {
     this.validateNearbySearchRequest(request);
 
-    const response = await this.get<PlacesNearbySearchResponse>('nearbysearch', {
-      location: this.serializeLatLng(request.location),
-      radius: request.radius,
-      keyword: request.keyword,
-      language: request.language ?? this.defaultLanguage,
-      minprice: request.minprice,
-      maxprice: request.maxprice,
-      name: request.name,
-      opennow: this.serializeBoolean(request.opennow),
-      rankby: request.rankby,
-      type: request.type,
-      pagetoken: request.pagetoken,
-    });
+    const response = await this.get<PlacesNearbySearchResponse>(
+      'nearbysearch',
+      {
+        location: this.serializeLatLng(request.location),
+        radius: request.radius,
+        keyword: request.keyword,
+        language: request.language ?? this.defaultLanguage,
+        minprice: request.minprice,
+        maxprice: request.maxprice,
+        name: request.name,
+        opennow: this.serializeBoolean(request.opennow),
+        rankby: request.rankby,
+        type: request.type,
+        pagetoken: request.pagetoken,
+      }
+    );
 
     return response;
   }
 
-  async nearbySearchNextPage(pagetoken: string, delayMs: number = DEFAULT_NEXT_PAGE_DELAY_MS): Promise<PlacesNearbySearchResponse> {
+  async nearbySearchNextPage(
+    pagetoken: string,
+    delayMs: number = DEFAULT_NEXT_PAGE_DELAY_MS
+  ): Promise<PlacesNearbySearchResponse> {
     await this.delay(delayMs);
     return this.get<PlacesNearbySearchResponse>('nearbysearch', { pagetoken });
   }
 
-  private validateNearbySearchRequest(request: PlacesNearbySearchRequest): void {
+  private validateNearbySearchRequest(
+    request: PlacesNearbySearchRequest
+  ): void {
     if (request.pagetoken) {
       return;
     }
 
     if (request.rankby === 'distance') {
       if (request.radius !== undefined) {
-        throw new Error('Do not supply radius when rankby is set to "distance".');
+        throw new Error(
+          'Do not supply radius when rankby is set to "distance".'
+        );
       }
       if (!request.keyword && !request.name && !request.type) {
         throw new Error(
@@ -422,7 +442,9 @@ export class PlacesClient {
     }
   }
 
-  async placeDetails(request: PlacesDetailsRequest): Promise<PlacesDetailsResponse> {
+  async placeDetails(
+    request: PlacesDetailsRequest
+  ): Promise<PlacesDetailsResponse> {
     const response = await this.get<PlacesDetailsResponse>('details', {
       place_id: request.placeId,
       fields: this.serializeFields(request.fields),
@@ -430,7 +452,9 @@ export class PlacesClient {
       region: request.region ?? this.defaultRegion,
       sessiontoken: request.sessionToken,
       reviews_sort: request.reviewsSort,
-      reviews_no_translations: this.serializeBoolean(request.reviewsNoTranslations),
+      reviews_no_translations: this.serializeBoolean(
+        request.reviewsNoTranslations
+      ),
     });
 
     return response;
@@ -468,8 +492,16 @@ export class PlacesClient {
   /**
    * Computes a direct photo URL for the Places Photo service.
    */
-  buildPhotoUrl(photoReference: string, options: PlacesPhotoOptions = {}): string {
-    const url = new URL(`${this.baseUrl}/photo`);
+  buildPhotoUrl(
+    photoReference: string,
+    options: PlacesPhotoOptions = {}
+  ): string {
+    // Handle test environment where window.location.origin might not be available
+    const baseUrl = this.baseUrl.startsWith('http')
+      ? this.baseUrl
+      : `${typeof window !== 'undefined' && window.location ? window.location.origin : 'https://maps.googleapis.com'}${this.baseUrl}`;
+
+    const url = new URL(`${baseUrl}/photo`);
     url.searchParams.set('key', this.apiKey);
     url.searchParams.set('photoreference', photoReference);
 
@@ -488,20 +520,32 @@ export class PlacesClient {
     return url.toString();
   }
 
-  private async get<T>(endpoint: PlacesEndpoint, params: Record<string, unknown>): Promise<T> {
+  private async get<T>(
+    endpoint: PlacesEndpoint,
+    params: Record<string, unknown>
+  ): Promise<T> {
     const { retries, delayMs, backoffFactor } = this.retryConfig;
     let attempt = 0;
     let delayDuration = delayMs;
 
     while (attempt <= retries) {
-      const url = new URL(`${this.baseUrl}/${endpoint}/json`);
+      // Handle test environment where window.location.origin might not be available
+      const baseUrl = this.baseUrl.startsWith('http')
+        ? this.baseUrl
+        : `${typeof window !== 'undefined' && window.location ? window.location.origin : 'https://maps.googleapis.com'}${this.baseUrl}`;
+
+      const url = new URL(`${baseUrl}/${endpoint}/json`);
       url.searchParams.set('key', this.apiKey);
       if (this.channel) {
         url.searchParams.set('channel', this.channel);
       }
 
       Object.entries(params).forEach(([paramKey, paramValue]) => {
-        if (paramValue === undefined || paramValue === null || paramValue === '') {
+        if (
+          paramValue === undefined ||
+          paramValue === null ||
+          paramValue === ''
+        ) {
           return;
         }
         url.searchParams.set(paramKey, String(paramValue));
@@ -579,7 +623,9 @@ export class PlacesClient {
   }
 
   private serializeComponents(components?: string[]): string | undefined {
-    return components && components.length > 0 ? components.join('|') : undefined;
+    return components && components.length > 0
+      ? components.join('|')
+      : undefined;
   }
 
   private serializeLatLng(location?: PlacesLatLngLiteral): string | undefined {
@@ -592,7 +638,9 @@ export class PlacesClient {
     return value ? 'true' : 'false';
   }
 
-  private serializeLocationBias(locationBias?: PlacesLocationBias): string | undefined {
+  private serializeLocationBias(
+    locationBias?: PlacesLocationBias
+  ): string | undefined {
     if (!locationBias) return undefined;
 
     switch (locationBias.type) {
@@ -640,7 +688,10 @@ export class PlacesClient {
  * Consumers are expected to persist the token for the duration of the user session.
  */
 export function createPlacesSessionToken(): string {
-  const cryptoApi = typeof globalThis !== 'undefined' ? (globalThis.crypto as Crypto | undefined) : undefined;
+  const cryptoApi =
+    typeof globalThis !== 'undefined'
+      ? (globalThis.crypto as Crypto | undefined)
+      : undefined;
   if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
     return cryptoApi.randomUUID();
   }
@@ -649,9 +700,12 @@ export function createPlacesSessionToken(): string {
 
 function generateFallbackUUID(): string {
   // Simple RFC4122 v4 compliant implementation for environments without crypto.randomUUID
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (character) => {
-    const random = (Math.random() * 16) | 0;
-    const value = character === 'x' ? random : (random & 0x3) | 0x8;
-    return value.toString(16);
-  });
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+    /[xy]/g,
+    (character) => {
+      const random = (Math.random() * 16) | 0;
+      const value = character === 'x' ? random : (random & 0x3) | 0x8;
+      return value.toString(16);
+    }
+  );
 }

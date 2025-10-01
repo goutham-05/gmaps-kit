@@ -50,19 +50,17 @@ export function useBicycling(): UseBicyclingReturn {
 
   const createBicyclingLayer = useCallback(
     (options?: BicyclingOptions): google.maps.BicyclingLayer => {
-      return handleAsyncOperation(() => {
-        const bicycling = new google.maps.BicyclingLayer();
+      const bicycling = new google.maps.BicyclingLayer();
 
-        if (options?.map) {
-          bicycling.setMap(options.map);
-          setIsVisible(true);
-        }
+      if (options?.map) {
+        bicycling.setMap(options.map);
+        setIsVisible(true);
+      }
 
-        setBicyclingLayer(bicycling);
-        return bicycling;
-      });
+      setBicyclingLayer(bicycling);
+      return bicycling;
     },
-    [handleAsyncOperation]
+    []
   );
 
   const showBicycling = useCallback(() => {

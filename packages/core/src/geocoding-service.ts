@@ -3,7 +3,7 @@
  * Reference: https://developers.google.com/maps/documentation/geocoding
  */
 
-const DEFAULT_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode';
+const DEFAULT_BASE_URL = '/api/geocoding';
 
 export type GeocodingStatus =
   | 'OK'
@@ -118,7 +118,10 @@ export class GeocodingApiError extends Error {
 }
 
 const SUCCESS_STATUSES: GeocodingStatus[] = ['OK', 'ZERO_RESULTS'];
-const DEFAULT_RETRY_STATUSES: GeocodingRetryStatus[] = ['UNKNOWN_ERROR', 'OVER_QUERY_LIMIT'];
+const DEFAULT_RETRY_STATUSES: GeocodingRetryStatus[] = [
+  'UNKNOWN_ERROR',
+  'OVER_QUERY_LIMIT',
+];
 const DEFAULT_RETRY_DELAY_MS = 1000;
 const DEFAULT_RETRY_FACTOR = 2;
 
@@ -134,7 +137,8 @@ export class GeocodingClient {
   private readonly retryConfig: Required<GeocodingRetryConfig>;
 
   constructor(options: GeocodingClientOptions) {
-    const fetchCandidate = options.fetchImpl ?? (globalThis.fetch as typeof fetch | undefined);
+    const fetchCandidate =
+      options.fetchImpl ?? (globalThis.fetch as typeof fetch | undefined);
 
     if (!fetchCandidate) {
       throw new Error(
@@ -143,7 +147,8 @@ export class GeocodingClient {
     }
 
     this.apiKey = options.apiKey;
-    this.fetchImpl = fetchCandidate;
+    // Bind the fetch function to prevent "Illegal invocation" errors
+    this.fetchImpl = fetchCandidate.bind(globalThis);
     this.baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
     this.defaultLanguage = options.language;
     this.defaultRegion = options.region;
@@ -155,7 +160,8 @@ export class GeocodingClient {
       retries: options.retryConfig?.retries ?? 0,
       delayMs: options.retryConfig?.delayMs ?? DEFAULT_RETRY_DELAY_MS,
       backoffFactor: options.retryConfig?.backoffFactor ?? DEFAULT_RETRY_FACTOR,
-      retryStatuses: options.retryConfig?.retryStatuses ?? DEFAULT_RETRY_STATUSES,
+      retryStatuses:
+        options.retryConfig?.retryStatuses ?? DEFAULT_RETRY_STATUSES,
     };
   }
 
@@ -175,7 +181,9 @@ export class GeocodingClient {
     });
   }
 
-  async reverseGeocode(request: ReverseGeocodeRequest): Promise<GeocodingResponse> {
+  async reverseGeocode(
+    request: ReverseGeocodeRequest
+  ): Promise<GeocodingResponse> {
     return this.geocode({
       latlng: request.latlng,
       resultType: request.resultType,
@@ -185,20 +193,32 @@ export class GeocodingClient {
   }
 
   private assertValidRequest(request: GeocodeRequest): void {
-    if (!request.address && !request.placeId && !request.latlng && !request.components) {
+    if (
+      !request.address &&
+      !request.placeId &&
+      !request.latlng &&
+      !request.components
+    ) {
       throw new Error(
         'Geocode request requires at least one of address, placeId, latlng, or components.'
       );
     }
   }
 
-  private async get(params: Record<string, unknown>): Promise<GeocodingResponse> {
+  private async get(
+    params: Record<string, unknown>
+  ): Promise<GeocodingResponse> {
     const { retries, delayMs, backoffFactor, retryStatuses } = this.retryConfig;
     let attempt = 0;
     let currentDelay = delayMs;
 
     while (attempt <= retries) {
-      const url = new URL(`${this.baseUrl}/json`);
+      // Handle test environment where window.location.origin might not be available
+      const baseUrl = this.baseUrl.startsWith('http')
+        ? this.baseUrl
+        : `${typeof window !== 'undefined' && window.location ? window.location.origin : 'https://maps.googleapis.com'}${this.baseUrl}`;
+
+      const url = new URL(`${baseUrl}/json`);
       url.searchParams.set('key', this.apiKey);
       if (this.channel) {
         url.searchParams.set('channel', this.channel);
@@ -243,7 +263,10 @@ export class GeocodingClient {
             payload
           );
 
-          if (retryStatuses.includes(apiError.status as GeocodingRetryStatus) && attempt < retries) {
+          if (
+            retryStatuses.includes(apiError.status as GeocodingRetryStatus) &&
+            attempt < retries
+          ) {
             await this.delay(currentDelay);
             attempt += 1;
             currentDelay *= backoffFactor;
@@ -283,7 +306,9 @@ export class GeocodingClient {
     return `${bounds.southwest.lat},${bounds.southwest.lng}|${bounds.northeast.lat},${bounds.northeast.lng}`;
   }
 
-  private serializeComponents(components?: Record<string, string>): string | undefined {
+  private serializeComponents(
+    components?: Record<string, string>
+  ): string | undefined {
     if (!components) return undefined;
     return Object.entries(components)
       .filter(([_, value]) => value !== undefined && value !== '')

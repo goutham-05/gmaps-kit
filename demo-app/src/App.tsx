@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PackageSelector, PackageType } from './components/PackageSelector';
 import { ReactDemo } from './components/ReactDemo';
+import { DocsSection } from './components/DocsSection';
 import {
   // Script loader
   loadGoogleMaps,
@@ -454,7 +455,9 @@ const getFunctionTips = (functionName: string): string => {
 
 function App() {
   const [selectedPackage, setSelectedPackage] = useState<PackageType>('core');
-  const [apiKey, setApiKey] = useState('YOUR_API_KEY');
+  const [apiKey, setApiKey] = useState(
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'
+  );
   const [isLoaded, setIsLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<any>(null);
   const [markers, setMarkers] = useState<any[]>([]);
@@ -2248,6 +2251,22 @@ function App() {
           onPackageChange={setSelectedPackage}
         />
         <ReactDemo />
+      </div>
+    );
+  }
+
+  // If Docs package is selected, render the documentation
+  if (selectedPackage === 'docs') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Package Selector */}
+        <PackageSelector
+          selectedPackage={selectedPackage}
+          onPackageChange={setSelectedPackage}
+        />
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <DocsSection />
+        </div>
       </div>
     );
   }

@@ -34,6 +34,76 @@ export type {
   UseStreetViewReturn,
 } from './hooks/useStreetView';
 
+export { useBicycling } from './hooks/useBicycling';
+export type {
+  BicyclingOptions,
+  UseBicyclingReturn,
+} from './hooks/useBicycling';
+
+// export { useClustering } from './hooks/useClustering';
+// export type {
+//   ClusterOptions,
+//   UseClusteringReturn,
+// } from './hooks/useClustering';
+
+export { useDirections } from './hooks/useDirections';
+export type {
+  DirectionsRequest,
+  DirectionsResult,
+  UseDirectionsReturn,
+} from './hooks/useDirections';
+
+// export { useDistanceMatrix } from './hooks/useDistanceMatrix';
+// export type {
+//   UseDistanceMatrixReturn,
+// } from './hooks/useDistanceMatrix';
+
+// export { useElevation } from './hooks/useElevation';
+// export type {
+//   UseElevationReturn,
+// } from './hooks/useElevation';
+
+// export { useGeometry } from './hooks/useGeometry';
+// export type {
+//   UseGeometryReturn,
+// } from './hooks/useGeometry';
+
+// export { useHeatmap } from './hooks/useHeatmap';
+// export type {
+//   HeatmapOptions,
+//   UseHeatmapReturn,
+// } from './hooks/useHeatmap';
+
+// export { useInfoWindows } from './hooks/useInfoWindows';
+// export type {
+//   InfoWindowOptions,
+//   UseInfoWindowsReturn,
+// } from './hooks/useInfoWindows';
+
+// export { useMapEvents } from './hooks/useMapEvents';
+// export type {
+//   MapEventHandlers,
+//   MapEventState,
+//   UseMapEventsReturn,
+// } from './hooks/useMapEvents';
+
+// export { useMaxZoom } from './hooks/useMaxZoom';
+// export type {
+//   UseMaxZoomReturn,
+// } from './hooks/useMaxZoom';
+
+// export { useTraffic } from './hooks/useTraffic';
+// export type {
+//   TrafficOptions,
+//   UseTrafficReturn,
+// } from './hooks/useTraffic';
+
+// export { useTransit } from './hooks/useTransit';
+// export type {
+//   TransitOptions,
+//   UseTransitReturn,
+// } from './hooks/useTransit';
+
 // Components
 export { Map } from './components/Map';
 export type { MapProps } from './components/Map';

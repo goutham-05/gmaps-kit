@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type PackageType = 'core' | 'react';
+export type PackageType = 'core' | 'react' | 'docs';
 
 export interface PackageSelectorProps {
   selectedPackage: PackageType;
@@ -43,12 +43,24 @@ export const PackageSelector: React.FC<PackageSelectorProps> = ({
               >
                 React
               </button>
+              <button
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  selectedPackage === 'docs'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                onClick={() => onPackageChange('docs')}
+              >
+                Docs
+              </button>
             </div>
           </div>
           <div className="text-sm text-gray-500">
             {selectedPackage === 'core'
               ? 'Framework-agnostic utilities'
-              : 'React hooks & components'}
+              : selectedPackage === 'react'
+                ? 'React hooks & components'
+                : 'Documentation & examples'}
           </div>
         </div>
       </div>
