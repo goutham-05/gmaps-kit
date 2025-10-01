@@ -1,0 +1,25 @@
+{
+  "name": "gmaps-kit-demo",
+  "version": "1.0.0",
+  "description": "Complete demo of @gmaps-kit/core functionality",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@gmaps-kit/core": "file:../packages/core",
+    "@tailwindcss/vite": "^4.1.13",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.0.0",
+    "vite": "^7.1.7"
+  }
+}
