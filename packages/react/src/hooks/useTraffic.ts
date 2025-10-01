@@ -20,35 +20,15 @@ export interface UseTrafficReturn {
 }
 
 export function useTraffic(): UseTrafficReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading] = useState(false);
+  const [error] = useState<Error | null>(null);
   const [trafficLayer, setTrafficLayer] =
     useState<google.maps.TrafficLayer | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => T): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = operation();
-        return data;
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Traffic operation failed');
-        setError(error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
   const createTrafficLayer = useCallback(
     (options?: TrafficOptions): google.maps.TrafficLayer => {
-      return handleAsyncOperation(() => {
+      try {
         const traffic = new google.maps.TrafficLayer();
 
         if (options?.map) {
@@ -58,9 +38,15 @@ export function useTraffic(): UseTrafficReturn {
 
         setTrafficLayer(traffic);
         return traffic;
-      });
+      } catch (err) {
+        const error =
+          err instanceof Error
+            ? err
+            : new Error('Traffic layer creation failed');
+        throw error;
+      }
     },
-    [handleAsyncOperation]
+    []
   );
 
   const showTraffic = useCallback(() => {

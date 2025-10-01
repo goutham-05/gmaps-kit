@@ -4,6 +4,7 @@ module.exports = {
     plugins: ['@typescript-eslint', 'prettier'],
     extends: [
         'eslint:recommended',
+        '@typescript-eslint/recommended',
         'prettier'
     ],
     env: {
@@ -23,22 +24,7 @@ module.exports = {
         'prettier/prettier': 'error',
         '@typescript-eslint/no-unused-vars': 'error',
         '@typescript-eslint/explicit-function-return-type': 'warn',
-        '@typescript-eslint/no-explicit-any': 'warn',
-        '@typescript-eslint/no-var-requires': 'error',
-        '@typescript-eslint/no-empty-function': 'warn',
-        '@typescript-eslint/no-inferrable-types': 'warn'
+        '@typescript-eslint/no-explicit-any': 'warn'
     },
-    globals: {
-        'google': 'readonly',
-        'RequestInit': 'readonly'
-    },
-    ignorePatterns: ['dist/', 'node_modules/', '*.js'],
-    overrides: [
-        {
-            files: ['packages/react/**/*.tsx'],
-            env: {
-                browser: true
-            }
-        }
-    ]
+    ignorePatterns: ['dist/', 'node_modules/', '*.js']
 };

@@ -175,7 +175,9 @@ export function getMarkerPosition(
  * @param draggable - Whether the marker should be draggable
  */
 export function setMarkerDraggable(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   marker: google.maps.marker.AdvancedMarkerElement,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   draggable: boolean
 ): void {
   // AdvancedMarkerElement doesn't support draggable property

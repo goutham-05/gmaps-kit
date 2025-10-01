@@ -31,15 +31,21 @@ describe('GeocodingClient', () => {
     const parsed = new URL(url);
     expect(parsed.pathname.endsWith('/json')).toBe(true);
     expect(parsed.searchParams.get('address')).toContain('1600');
-    expect(parsed.searchParams.get('components')).toBe('country:US|postal_code:94043');
+    expect(parsed.searchParams.get('components')).toBe(
+      'country:US|postal_code:94043'
+    );
     expect(parsed.searchParams.get('result_type')).toBe('street_address|route');
   });
 
   it('builds reverse geocode request with latlng', async () => {
     const client = new GeocodingClient({ apiKey: 'key', fetchImpl: fetchMock });
-    const location: GeocodingLatLngLiteral = { lat: 37.422, lng: -122.084 }; 
+    const location: GeocodingLatLngLiteral = { lat: 37.422, lng: -122.084 };
 
-    await client.reverseGeocode({ latlng: location, language: 'en', resultType: ['street_address'] });
+    await client.reverseGeocode({
+      latlng: location,
+      language: 'en',
+      resultType: ['street_address'],
+    });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url] = fetchMock.mock.calls[0];
@@ -55,7 +61,10 @@ describe('GeocodingClient', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        json: async () => ({ status: 'OVER_QUERY_LIMIT', error_message: 'slow down' }),
+        json: async () => ({
+          status: 'OVER_QUERY_LIMIT',
+          error_message: 'slow down',
+        }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -91,11 +100,16 @@ describe('GeocodingClient', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: async () => ({ status: 'REQUEST_DENIED', error_message: 'invalid key' }),
+      json: async () => ({
+        status: 'REQUEST_DENIED',
+        error_message: 'invalid key',
+      }),
     });
 
     const client = new GeocodingClient({ apiKey: 'bad', fetchImpl: fetchMock });
 
-    await expect(client.geocode({ address: 'test' })).rejects.toThrow(GeocodingApiError);
+    await expect(client.geocode({ address: 'test' })).rejects.toThrow(
+      GeocodingApiError
+    );
   });
 });

@@ -67,7 +67,10 @@ export interface UsePlacesReturn {
     pagetoken: string,
     delayMs?: number
   ) => Promise<PlacesNearbySearchResponse>;
-  buildPhotoUrl: (photoReference: string, options?: PlacesPhotoOptions) => string;
+  buildPhotoUrl: (
+    photoReference: string,
+    options?: PlacesPhotoOptions
+  ) => string;
 }
 
 /**
@@ -106,7 +109,10 @@ export function usePlaces(options: UsePlacesOptions): UsePlacesReturn {
   const pendingCountRef = useRef(0);
 
   const runWithState = useCallback(
-    async <T>(operation: PlacesOperationName, executor: () => Promise<T>): Promise<T> => {
+    async <T>(
+      operation: PlacesOperationName,
+      executor: () => Promise<T>
+    ): Promise<T> => {
       pendingCountRef.current += 1;
       if (isMountedRef.current) {
         setState((previous) => ({
@@ -139,7 +145,9 @@ export function usePlaces(options: UsePlacesOptions): UsePlacesReturn {
 
   const findPlaceFromText = useCallback(
     (request: PlacesFindPlaceRequest) =>
-      runWithState('findPlaceFromText', () => client.findPlaceFromText(request)),
+      runWithState('findPlaceFromText', () =>
+        client.findPlaceFromText(request)
+      ),
     [client, runWithState]
   );
 
@@ -169,7 +177,9 @@ export function usePlaces(options: UsePlacesOptions): UsePlacesReturn {
 
   const queryAutocomplete = useCallback(
     (request: PlacesQueryAutocompleteRequest) =>
-      runWithState('queryAutocomplete', () => client.queryAutocomplete(request)),
+      runWithState('queryAutocomplete', () =>
+        client.queryAutocomplete(request)
+      ),
     [client, runWithState]
   );
 
@@ -190,7 +200,8 @@ export function usePlaces(options: UsePlacesOptions): UsePlacesReturn {
   );
 
   const buildPhotoUrl = useCallback<UsePlacesReturn['buildPhotoUrl']>(
-    (photoReference, photoOptions) => client.buildPhotoUrl(photoReference, photoOptions),
+    (photoReference, photoOptions) =>
+      client.buildPhotoUrl(photoReference, photoOptions),
     [client]
   );
 

@@ -3,7 +3,6 @@ import {
   createInfoWindow,
   openInfoWindow,
   closeInfoWindow,
-  clearInfoWindows,
 } from '@gmaps-kit/core';
 import { MapInstance } from '@gmaps-kit/core';
 
@@ -48,12 +47,18 @@ export function useInfoWindows(): UseInfoWindowsReturn {
 
   const createInfoWindowInstance = useCallback(
     (options: InfoWindowOptions): InfoWindowInstance => {
+      // Convert HTMLElement to string if needed
+      const contentString =
+        typeof options.content === 'string'
+          ? options.content
+          : options.content.outerHTML;
+
       const infoWindow = createInfoWindow({
-        content: options.content,
+        content: contentString,
         position: options.position,
         maxWidth: options.maxWidth,
         pixelOffset: options.pixelOffset,
-        zIndex: options.zIndex,
+        disableAutoPan: false,
       });
 
       const infoWindowInstance: InfoWindowInstance = {
@@ -88,11 +93,9 @@ export function useInfoWindows(): UseInfoWindowsReturn {
       if (marker) {
         openInfoWindow(infoWindowInstance.infoWindow, marker, mapInstance.map);
       } else if (infoWindowInstance.position) {
-        openInfoWindow(
-          infoWindowInstance.infoWindow,
-          infoWindowInstance.position,
-          mapInstance.map
-        );
+        // For position-based InfoWindows, we need to open them directly on the map
+        infoWindowInstance.infoWindow.setPosition(infoWindowInstance.position);
+        infoWindowInstance.infoWindow.open(mapInstance.map);
       } else {
         throw new Error('Either marker or position must be provided');
       }

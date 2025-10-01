@@ -43,7 +43,10 @@ describe('useGeocodingService', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: async () => ({ status: 'REQUEST_DENIED', error_message: 'bad key' }),
+      json: async () => ({
+        status: 'REQUEST_DENIED',
+        error_message: 'bad key',
+      }),
     });
 
     const { result, unmount } = renderTestHook(

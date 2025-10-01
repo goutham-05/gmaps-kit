@@ -19,7 +19,7 @@ export const Map: React.FC<MapProps> = ({
   ...mapOptions
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { mapInstance, isReady } = useMap(id, { ...mapOptions, onMapReady });
+  useMap(id, { ...mapOptions, onMapReady });
 
   useEffect(() => {
     if (containerRef.current && !containerRef.current.id) {

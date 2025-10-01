@@ -8,13 +8,16 @@ import { GeocodingResult } from './types';
  */
 export function geocode(
   address: string,
-  callback: (results: GeocodingResult[], status: google.maps.GeocoderStatus) => void
+  callback: (
+    results: GeocodingResult[],
+    status: google.maps.GeocoderStatus
+  ) => void
 ): void {
   const geocoder = new google.maps.Geocoder();
-  
+
   geocoder.geocode({ address }, (results, status) => {
     if (status === google.maps.GeocoderStatus.OK && results) {
-      const geocodingResults: GeocodingResult[] = results.map(result => ({
+      const geocodingResults: GeocodingResult[] = results.map((result) => ({
         address: result.formatted_address,
         location: {
           lat: result.geometry.location.lat(),
@@ -37,13 +40,16 @@ export function geocode(
  */
 export function reverseGeocode(
   location: google.maps.LatLngLiteral,
-  callback: (results: GeocodingResult[], status: google.maps.GeocoderStatus) => void
+  callback: (
+    results: GeocodingResult[],
+    status: google.maps.GeocoderStatus
+  ) => void
 ): void {
   const geocoder = new google.maps.Geocoder();
-  
+
   geocoder.geocode({ location }, (results, status) => {
     if (status === google.maps.GeocoderStatus.OK && results) {
-      const geocodingResults: GeocodingResult[] = results.map(result => ({
+      const geocodingResults: GeocodingResult[] = results.map((result) => ({
         address: result.formatted_address,
         location: {
           lat: result.geometry.location.lat(),
@@ -81,7 +87,9 @@ export function geocodeAsync(address: string): Promise<GeocodingResult[]> {
  * @param location - Coordinates to reverse geocode
  * @returns Promise that resolves with geocoding results
  */
-export function reverseGeocodeAsync(location: google.maps.LatLngLiteral): Promise<GeocodingResult[]> {
+export function reverseGeocodeAsync(
+  location: google.maps.LatLngLiteral
+): Promise<GeocodingResult[]> {
   return new Promise((resolve, reject) => {
     reverseGeocode(location, (results, status) => {
       if (status === google.maps.GeocoderStatus.OK) {
@@ -102,29 +110,35 @@ export function reverseGeocodeAsync(location: google.maps.LatLngLiteral): Promis
 export function geocodeWithComponents(
   address: string,
   componentRestrictions: google.maps.GeocoderComponentRestrictions,
-  callback: (results: GeocodingResult[], status: google.maps.GeocoderStatus) => void
+  callback: (
+    results: GeocodingResult[],
+    status: google.maps.GeocoderStatus
+  ) => void
 ): void {
   const geocoder = new google.maps.Geocoder();
-  
-  geocoder.geocode({ 
-    address,
-    componentRestrictions 
-  }, (results, status) => {
-    if (status === google.maps.GeocoderStatus.OK && results) {
-      const geocodingResults: GeocodingResult[] = results.map(result => ({
-        address: result.formatted_address,
-        location: {
-          lat: result.geometry.location.lat(),
-          lng: result.geometry.location.lng(),
-        },
-        placeId: result.place_id,
-        types: result.types,
-      }));
-      callback(geocodingResults, status);
-    } else {
-      callback([], status);
+
+  geocoder.geocode(
+    {
+      address,
+      componentRestrictions,
+    },
+    (results, status) => {
+      if (status === google.maps.GeocoderStatus.OK && results) {
+        const geocodingResults: GeocodingResult[] = results.map((result) => ({
+          address: result.formatted_address,
+          location: {
+            lat: result.geometry.location.lat(),
+            lng: result.geometry.location.lng(),
+          },
+          placeId: result.place_id,
+          types: result.types,
+        }));
+        callback(geocodingResults, status);
+      } else {
+        callback([], status);
+      }
     }
-  });
+  );
 }
 
 /**
@@ -136,29 +150,35 @@ export function geocodeWithComponents(
 export function geocodeWithBounds(
   address: string,
   bounds: google.maps.LatLngBounds,
-  callback: (results: GeocodingResult[], status: google.maps.GeocoderStatus) => void
+  callback: (
+    results: GeocodingResult[],
+    status: google.maps.GeocoderStatus
+  ) => void
 ): void {
   const geocoder = new google.maps.Geocoder();
-  
-  geocoder.geocode({ 
-    address,
-    bounds 
-  }, (results, status) => {
-    if (status === google.maps.GeocoderStatus.OK && results) {
-      const geocodingResults: GeocodingResult[] = results.map(result => ({
-        address: result.formatted_address,
-        location: {
-          lat: result.geometry.location.lat(),
-          lng: result.geometry.location.lng(),
-        },
-        placeId: result.place_id,
-        types: result.types,
-      }));
-      callback(geocodingResults, status);
-    } else {
-      callback([], status);
+
+  geocoder.geocode(
+    {
+      address,
+      bounds,
+    },
+    (results, status) => {
+      if (status === google.maps.GeocoderStatus.OK && results) {
+        const geocodingResults: GeocodingResult[] = results.map((result) => ({
+          address: result.formatted_address,
+          location: {
+            lat: result.geometry.location.lat(),
+            lng: result.geometry.location.lng(),
+          },
+          placeId: result.place_id,
+          types: result.types,
+        }));
+        callback(geocodingResults, status);
+      } else {
+        callback([], status);
+      }
     }
-  });
+  );
 }
 
 /**
@@ -170,29 +190,35 @@ export function geocodeWithBounds(
 export function geocodeWithRegion(
   address: string,
   region: string,
-  callback: (results: GeocodingResult[], status: google.maps.GeocoderStatus) => void
+  callback: (
+    results: GeocodingResult[],
+    status: google.maps.GeocoderStatus
+  ) => void
 ): void {
   const geocoder = new google.maps.Geocoder();
-  
-  geocoder.geocode({ 
-    address,
-    region 
-  }, (results, status) => {
-    if (status === google.maps.GeocoderStatus.OK && results) {
-      const geocodingResults: GeocodingResult[] = results.map(result => ({
-        address: result.formatted_address,
-        location: {
-          lat: result.geometry.location.lat(),
-          lng: result.geometry.location.lng(),
-        },
-        placeId: result.place_id,
-        types: result.types,
-      }));
-      callback(geocodingResults, status);
-    } else {
-      callback([], status);
+
+  geocoder.geocode(
+    {
+      address,
+      region,
+    },
+    (results, status) => {
+      if (status === google.maps.GeocoderStatus.OK && results) {
+        const geocodingResults: GeocodingResult[] = results.map((result) => ({
+          address: result.formatted_address,
+          location: {
+            lat: result.geometry.location.lat(),
+            lng: result.geometry.location.lng(),
+          },
+          placeId: result.place_id,
+          types: result.types,
+        }));
+        callback(geocodingResults, status);
+      } else {
+        callback([], status);
+      }
     }
-  });
+  );
 }
 
 /**
@@ -213,7 +239,9 @@ export async function geocodeFirst(address: string): Promise<GeocodingResult> {
  * @param location - Coordinates to reverse geocode
  * @returns Promise that resolves with the first geocoding result
  */
-export async function reverseGeocodeFirst(location: google.maps.LatLngLiteral): Promise<GeocodingResult> {
+export async function reverseGeocodeFirst(
+  location: google.maps.LatLngLiteral
+): Promise<GeocodingResult> {
   const results = await reverseGeocodeAsync(location);
   if (results.length === 0) {
     throw new Error('No reverse geocoding results found');

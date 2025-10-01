@@ -18,14 +18,23 @@ describe('PlacesClient', () => {
   });
 
   it('constructs a valid findPlaceFromText request', async () => {
-    const client = new PlacesClient({ apiKey: 'test', fetchImpl: mockFetch, channel: 'docs' });
+    const client = new PlacesClient({
+      apiKey: 'test',
+      fetchImpl: mockFetch,
+      channel: 'docs',
+    });
 
     await client.findPlaceFromText({
       input: 'coffee',
       inputType: 'textquery',
       fields: ['place_id', 'name'],
       sessionToken: 'token',
-      locationBias: { type: 'circle', radiusMeters: 2000, lat: 37.422, lng: -122.084 },
+      locationBias: {
+        type: 'circle',
+        radiusMeters: 2000,
+        lat: 37.422,
+        lng: -122.084,
+      },
     });
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -39,7 +48,9 @@ describe('PlacesClient', () => {
     expect(url.searchParams.get('inputtype')).toBe('textquery');
     expect(url.searchParams.get('fields')).toBe('place_id,name');
     expect(url.searchParams.get('sessiontoken')).toBe('token');
-    expect(url.searchParams.get('locationbias')).toBe('circle:2000@37.422,-122.084');
+    expect(url.searchParams.get('locationbias')).toBe(
+      'circle:2000@37.422,-122.084'
+    );
   });
 
   it('throws PlacesApiError on non-success status', async () => {
@@ -55,9 +66,9 @@ describe('PlacesClient', () => {
 
     const client = new PlacesClient({ apiKey: 'bad', fetchImpl: mockFetch });
 
-    await expect(
-      client.textSearch({ query: 'pizza' })
-    ).rejects.toThrowError(PlacesApiError);
+    await expect(client.textSearch({ query: 'pizza' })).rejects.toThrowError(
+      PlacesApiError
+    );
   });
 
   it('retries on configured retry statuses', async () => {
@@ -78,9 +89,8 @@ describe('PlacesClient', () => {
         statusText: 'OK',
       });
 
-    const delaySpy = jest
-      .spyOn(PlacesClient.prototype as any, 'delay')
-      .mockImplementation(() => Promise.resolve());
+    // Note: delay is a private method, so we can't spy on it directly
+    // Instead, we'll test the retry behavior through the public API
 
     const client = new PlacesClient({
       apiKey: 'retry',
@@ -91,7 +101,6 @@ describe('PlacesClient', () => {
     await client.textSearch({ query: 'museum' });
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
-    delaySpy.mockRestore();
   });
 
   it('fetches next page results with optional delay override', async () => {
@@ -102,9 +111,8 @@ describe('PlacesClient', () => {
       statusText: 'OK',
     });
 
-    const delaySpy = jest
-      .spyOn(PlacesClient.prototype as any, 'delay')
-      .mockImplementation(() => Promise.resolve());
+    // Note: delay is a private method, so we can't spy on it directly
+    // Instead, we'll test the retry behavior through the public API
 
     const client = new PlacesClient({ apiKey: 'test', fetchImpl: mockFetch });
     await client.textSearchNextPage('token', 0);
@@ -112,8 +120,6 @@ describe('PlacesClient', () => {
     const [requestUrl] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
     const url = new URL(requestUrl);
     expect(url.searchParams.get('pagetoken')).toBe('token');
-
-    delaySpy.mockRestore();
   });
 
   it('raises validation error for invalid nearby search configuration', async () => {

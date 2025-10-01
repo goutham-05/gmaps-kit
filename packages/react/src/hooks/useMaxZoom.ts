@@ -47,19 +47,19 @@ export function useMaxZoom(): UseMaxZoomReturn {
       return handleAsyncOperation(async () => {
         const maxZoomService = new google.maps.MaxZoomService();
 
-        const maxZoomRequest: google.maps.MaxZoomRequest = {
-          location: request.location,
-        };
-
         const result = await new Promise<google.maps.MaxZoomResult>(
           (resolve, reject) => {
             maxZoomService.getMaxZoomAtLatLng(
-              maxZoomRequest,
-              (result, status) => {
-                if (status === google.maps.MaxZoomStatus.OK && result) {
+              request.location,
+              (result: google.maps.MaxZoomResult) => {
+                if (result && result.status === google.maps.MaxZoomStatus.OK) {
                   resolve(result);
                 } else {
-                  reject(new Error(`Max Zoom request failed: ${status}`));
+                  reject(
+                    new Error(
+                      `Max Zoom request failed: ${result?.status || 'Unknown error'}`
+                    )
+                  );
                 }
               }
             );
@@ -67,10 +67,10 @@ export function useMaxZoom(): UseMaxZoomReturn {
         );
 
         const maxZoomResult: MaxZoomResult = {
-          maxZoom: result.maxZoom,
+          maxZoom: result.zoom,
           location: {
-            lat: result.location.lat(),
-            lng: result.location.lng(),
+            lat: request.location.lat,
+            lng: request.location.lng,
           },
         };
 

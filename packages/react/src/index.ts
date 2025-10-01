@@ -40,11 +40,12 @@ export type {
   UseBicyclingReturn,
 } from './hooks/useBicycling';
 
-// export { useClustering } from './hooks/useClustering';
-// export type {
-//   ClusterOptions,
-//   UseClusteringReturn,
-// } from './hooks/useClustering';
+export { useClustering, isMarkerClustererLoaded } from './hooks/useClustering';
+export type {
+  ClusterOptions,
+  ClusterMarker,
+  UseClusteringReturn,
+} from './hooks/useClustering';
 
 export { useDirections } from './hooks/useDirections';
 export type {

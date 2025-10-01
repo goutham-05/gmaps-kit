@@ -8,7 +8,6 @@ import {
   panTo,
   fitMapToMarkers,
   MapInstance,
-  MapOptions,
 } from '@gmaps-kit/core';
 
 export interface UseMapOptions {

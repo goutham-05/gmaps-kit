@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   createStreetViewPanorama,
   setStreetViewPosition,
@@ -36,13 +36,20 @@ export function useStreetView(
   const [instance, setInstance] = useState<StreetViewInstance | null>(null);
   const [isReady, setReady] = useState(false);
 
-  const memoizedHandlers = useMemo(() => options.eventHandlers, [options.eventHandlers]);
+  const memoizedHandlers = useMemo(
+    () => options.eventHandlers,
+    [options.eventHandlers]
+  );
 
   const initialize = useCallback(() => {
     if (!containerId || instance) return;
 
     try {
-      const panorama = createStreetViewPanorama(containerId, options, memoizedHandlers);
+      const panorama = createStreetViewPanorama(
+        containerId,
+        options,
+        memoizedHandlers
+      );
       setInstance(panorama);
       setReady(true);
     } catch (error) {

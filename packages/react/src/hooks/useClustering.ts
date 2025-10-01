@@ -1,6 +1,51 @@
 import { useState, useCallback, useEffect } from 'react';
 import { MapInstance } from '@gmaps-kit/core';
 
+// Type definitions for MarkerClusterer (external library)
+declare global {
+  namespace google.maps {
+    interface MarkerClustererOptions {
+      gridSize?: number;
+      maxZoom?: number;
+      minimumClusterSize?: number;
+      averageCenter?: boolean;
+      ignoreHidden?: boolean;
+      enableRetinaIcons?: boolean;
+      styles?: ClusterIconStyle[];
+      imagePath?: string;
+      imageExtension?: string;
+      zoomOnClick?: boolean;
+    }
+
+    interface ClusterIconStyle {
+      url: string;
+      height: number;
+      width: number;
+      anchor?: number[] | google.maps.Point;
+      textColor?: string;
+      textSize?: number;
+      backgroundPosition?: string;
+    }
+
+    class MarkerClusterer {
+      constructor(
+        map: google.maps.Map,
+        markers?: google.maps.Marker[],
+        options?: MarkerClustererOptions
+      );
+      addMarker(marker: google.maps.Marker): void;
+      addMarkers(markers: google.maps.Marker[]): void;
+      removeMarker(marker: google.maps.Marker): void;
+      removeMarkers(markers: google.maps.Marker[]): void;
+      clearMarkers(): void;
+      redraw(): void;
+      getMarkers(): google.maps.Marker[];
+      getTotalMarkers(): number;
+      getTotalClusters(): number;
+    }
+  }
+}
+
 export interface ClusterOptions {
   gridSize?: number;
   maxZoom?: number;
@@ -8,7 +53,7 @@ export interface ClusterOptions {
   averageCenter?: boolean;
   ignoreHidden?: boolean;
   enableRetinaIcons?: boolean;
-  styles?: google.maps.MarkerClustererOptions['styles'];
+  styles?: google.maps.ClusterIconStyle[];
   imagePath?: string;
   imageExtension?: string;
   zoomOnClick?: boolean;
@@ -25,18 +70,24 @@ export interface UseClusteringReturn {
   isReady: boolean;
   createClusterer: (
     mapInstance: MapInstance,
-    markers: google.maps.marker.AdvancedMarkerElement[],
+    markers: google.maps.Marker[],
     options?: ClusterOptions
   ) => google.maps.MarkerClusterer;
-  addMarkersToCluster: (
-    markers: google.maps.marker.AdvancedMarkerElement[]
-  ) => void;
-  removeMarkersFromCluster: (
-    markers: google.maps.marker.AdvancedMarkerElement[]
-  ) => void;
+  addMarkersToCluster: (markers: google.maps.Marker[]) => void;
+  removeMarkersFromCluster: (markers: google.maps.Marker[]) => void;
   clearCluster: () => void;
   redrawCluster: () => void;
   getClusterer: () => google.maps.MarkerClusterer | null;
+  getTotalMarkers: () => number;
+  getTotalClusters: () => number;
+  getMarkers: () => google.maps.Marker[];
+}
+
+/**
+ * Check if MarkerClusterer library is loaded
+ */
+export function isMarkerClustererLoaded(): boolean {
+  return typeof (google.maps as any).MarkerClusterer !== 'undefined';
 }
 
 export function useClustering(): UseClusteringReturn {
@@ -47,13 +98,13 @@ export function useClustering(): UseClusteringReturn {
   const createClusterer = useCallback(
     (
       mapInstance: MapInstance,
-      markers: google.maps.marker.AdvancedMarkerElement[],
+      markers: google.maps.Marker[],
       options: ClusterOptions = {}
     ): google.maps.MarkerClusterer => {
       // Check if MarkerClusterer is available
-      if (typeof google.maps.MarkerClusterer === 'undefined') {
+      if (!isMarkerClustererLoaded()) {
         throw new Error(
-          'MarkerClusterer library is not loaded. Please include the markerclusterer library.'
+          'MarkerClusterer library is not loaded. Please include the markerclusterer library from https://github.com/googlemaps/js-markerclusterer.'
         );
       }
 
@@ -70,7 +121,7 @@ export function useClustering(): UseClusteringReturn {
         zoomOnClick: options.zoomOnClick !== false,
       };
 
-      const newClusterer = new google.maps.MarkerClusterer(
+      const newClusterer = new (google.maps as any).MarkerClusterer(
         mapInstance.map,
         markers,
         clustererOptions
@@ -85,7 +136,7 @@ export function useClustering(): UseClusteringReturn {
   );
 
   const addMarkersToCluster = useCallback(
-    (markers: google.maps.marker.AdvancedMarkerElement[]) => {
+    (markers: google.maps.Marker[]) => {
       if (!clusterer) {
         throw new Error('Clusterer is not initialized');
       }
@@ -96,7 +147,7 @@ export function useClustering(): UseClusteringReturn {
   );
 
   const removeMarkersFromCluster = useCallback(
-    (markers: google.maps.marker.AdvancedMarkerElement[]) => {
+    (markers: google.maps.Marker[]) => {
       if (!clusterer) {
         throw new Error('Clusterer is not initialized');
       }
@@ -126,6 +177,27 @@ export function useClustering(): UseClusteringReturn {
     return clusterer;
   }, [clusterer]);
 
+  const getTotalMarkers = useCallback((): number => {
+    if (!clusterer) {
+      return 0;
+    }
+    return clusterer.getTotalMarkers();
+  }, [clusterer]);
+
+  const getTotalClusters = useCallback((): number => {
+    if (!clusterer) {
+      return 0;
+    }
+    return clusterer.getTotalClusters();
+  }, [clusterer]);
+
+  const getMarkers = useCallback((): google.maps.Marker[] => {
+    if (!clusterer) {
+      return [];
+    }
+    return clusterer.getMarkers();
+  }, [clusterer]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -144,5 +216,8 @@ export function useClustering(): UseClusteringReturn {
     clearCluster,
     redrawCluster,
     getClusterer,
+    getTotalMarkers,
+    getTotalClusters,
+    getMarkers,
   };
 }

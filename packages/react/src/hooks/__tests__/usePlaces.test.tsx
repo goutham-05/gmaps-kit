@@ -28,7 +28,10 @@ describe('usePlaces', () => {
     );
 
     await act(async () => {
-      await result.current.findPlaceFromText({ input: 'coffee', inputType: 'textquery' });
+      await result.current.findPlaceFromText({
+        input: 'coffee',
+        inputType: 'textquery',
+      });
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -44,7 +47,10 @@ describe('usePlaces', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: async () => ({ status: 'REQUEST_DENIED', error_message: 'Invalid key' }),
+      json: async () => ({
+        status: 'REQUEST_DENIED',
+        error_message: 'Invalid key',
+      }),
     });
 
     const { result, unmount } = renderTestHook(
@@ -77,7 +83,11 @@ describe('usePlaces', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: async () => ({ status: 'OK', results: [], next_page_token: undefined }),
+      json: async () => ({
+        status: 'OK',
+        results: [],
+        next_page_token: undefined,
+      }),
     });
 
     const { result, unmount } = renderTestHook(

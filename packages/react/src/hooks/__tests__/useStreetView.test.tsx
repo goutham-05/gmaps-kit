@@ -33,7 +33,10 @@ describe('useStreetView', () => {
     container.id = 'street-view';
     document.body.appendChild(container);
 
-    const { result, unmount } = renderTestHook((id: string) => useStreetView(id), 'street-view');
+    const { result, unmount } = renderTestHook(
+      (id: string) => useStreetView(id),
+      'street-view'
+    );
 
     await act(async () => {});
 
@@ -46,7 +49,10 @@ describe('useStreetView', () => {
     });
 
     expect(mockPanorama.setPosition).toHaveBeenCalledWith({ lat: 1, lng: 2 });
-    expect(mockPanorama.setPov).toHaveBeenCalledWith({ heading: 180, pitch: 10 });
+    expect(mockPanorama.setPov).toHaveBeenCalledWith({
+      heading: 180,
+      pitch: 10,
+    });
     expect(mockPanorama.setVisible).toHaveBeenCalledWith(false);
 
     unmount();

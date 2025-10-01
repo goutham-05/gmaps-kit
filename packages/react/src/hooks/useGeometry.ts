@@ -45,35 +45,15 @@ export interface UseGeometryReturn {
   ) => boolean;
   encodePath: (path: google.maps.LatLngLiteral[]) => string;
   decodePath: (encodedPath: string) => google.maps.LatLngLiteral[];
-  spherical: google.maps.geometry.spherical;
-  encoding: google.maps.geometry.encoding;
-  poly: google.maps.geometry.poly;
+  spherical: typeof google.maps.geometry.spherical;
+  encoding: typeof google.maps.geometry.encoding;
+  poly: typeof google.maps.geometry.poly;
 }
 
 export function useGeometry(): UseGeometryReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<GeometryCalculation | null>(null);
-
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => T): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = operation();
-        return data;
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Geometry operation failed');
-        setError(error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+  const [isLoading] = useState(false);
+  const [error] = useState<Error | null>(null);
+  const [results] = useState<GeometryCalculation | null>(null);
 
   const computeDistanceBetween = useCallback(
     (
@@ -128,6 +108,9 @@ export function useGeometry(): UseGeometryReturn {
         distance,
         heading
       );
+      if (!origin) {
+        throw new Error('Could not compute offset origin');
+      }
       return { lat: origin.lat(), lng: origin.lng() };
     },
     []
@@ -155,21 +138,35 @@ export function useGeometry(): UseGeometryReturn {
 
   const computeBounds = useCallback(
     (path: google.maps.LatLngLiteral[]): google.maps.LatLngBounds => {
-      const latLngPath = path.map(
-        (point) => new google.maps.LatLng(point.lat, point.lng)
-      );
-      return google.maps.geometry.spherical.computeBounds(latLngPath);
+      if (path.length === 0) {
+        return new google.maps.LatLngBounds();
+      }
+
+      const bounds = new google.maps.LatLngBounds();
+      path.forEach((point) => {
+        bounds.extend(new google.maps.LatLng(point.lat, point.lng));
+      });
+      return bounds;
     },
     []
   );
 
   const computeCenter = useCallback(
     (path: google.maps.LatLngLiteral[]): google.maps.LatLngLiteral => {
-      const latLngPath = path.map(
-        (point) => new google.maps.LatLng(point.lat, point.lng)
-      );
-      const center = google.maps.geometry.spherical.computeCenter(latLngPath);
-      return { lat: center.lat(), lng: center.lng() };
+      if (path.length === 0) {
+        return { lat: 0, lng: 0 };
+      }
+
+      if (path.length === 1) {
+        return path[0];
+      }
+
+      // Compute average of all points
+      const avgLat =
+        path.reduce((sum, point) => sum + point.lat, 0) / path.length;
+      const avgLng =
+        path.reduce((sum, point) => sum + point.lng, 0) / path.length;
+      return { lat: avgLat, lng: avgLng };
     },
     []
   );
@@ -184,9 +181,13 @@ export function useGeometry(): UseGeometryReturn {
       const polylineLatLng = polyline.map(
         (p) => new google.maps.LatLng(p.lat, p.lng)
       );
+      // Create a temporary polyline for the geometry check
+      const tempPolyline = new google.maps.Polyline({
+        path: polylineLatLng,
+      });
       return google.maps.geometry.poly.isLocationOnEdge(
         pointLatLng,
-        polylineLatLng,
+        tempPolyline,
         tolerance
       );
     },

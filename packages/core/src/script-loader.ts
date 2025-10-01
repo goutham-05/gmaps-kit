@@ -6,7 +6,9 @@ import { ScriptLoaderOptions } from './types';
  * @param options - Configuration options for the script loader
  * @returns Promise that resolves when the script is loaded
  */
-export async function loadGoogleMaps(options: ScriptLoaderOptions): Promise<void> {
+export async function loadGoogleMaps(
+  options: ScriptLoaderOptions
+): Promise<void> {
   return new Promise((resolve, reject) => {
     // Check if Google Maps is already loaded
     if (window.google && window.google.maps) {
@@ -15,11 +17,15 @@ export async function loadGoogleMaps(options: ScriptLoaderOptions): Promise<void
     }
 
     // Check if script is already being loaded
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    const existingScript = document.querySelector(
+      'script[src*="maps.googleapis.com"]'
+    );
     if (existingScript) {
       // Wait for the existing script to load
       existingScript.addEventListener('load', () => resolve());
-      existingScript.addEventListener('error', () => reject(new Error('Failed to load Google Maps script')));
+      existingScript.addEventListener('error', () =>
+        reject(new Error('Failed to load Google Maps script'))
+      );
       return;
     }
 
@@ -73,7 +79,7 @@ export function isGoogleMapsLoaded(): boolean {
  * @param timeout - Maximum time to wait in milliseconds (default: 10000)
  * @returns Promise that resolves when Google Maps is available
  */
-export function waitForGoogleMaps(timeout: number = 10000): Promise<void> {
+export function waitForGoogleMaps(timeout = 10000): Promise<void> {
   return new Promise((resolve, reject) => {
     if (isGoogleMapsLoaded()) {
       resolve();

@@ -1,5 +1,10 @@
 /// <reference types="google.maps" />
-import { DirectionsOptions, DistanceMatrixOptions, DistanceMatrixResult, MapInstance } from './types';
+import {
+  DirectionsOptions,
+  DistanceMatrixOptions,
+  DistanceMatrixResult,
+  MapInstance,
+} from './types';
 
 /**
  * Gets directions between two points
@@ -8,10 +13,13 @@ import { DirectionsOptions, DistanceMatrixOptions, DistanceMatrixResult, MapInst
  */
 export function getDirections(
   options: DirectionsOptions,
-  callback: (result: google.maps.DirectionsResult | null, status: google.maps.DirectionsStatus) => void
+  callback: (
+    result: google.maps.DirectionsResult | null,
+    status: google.maps.DirectionsStatus
+  ) => void
 ): void {
   const directionsService = new google.maps.DirectionsService();
-  
+
   const request: google.maps.DirectionsRequest = {
     origin: options.origin,
     destination: options.destination,
@@ -32,7 +40,9 @@ export function getDirections(
  * @param options - Directions configuration options
  * @returns Promise that resolves with directions result
  */
-export function getDirectionsAsync(options: DirectionsOptions): Promise<google.maps.DirectionsResult> {
+export function getDirectionsAsync(
+  options: DirectionsOptions
+): Promise<google.maps.DirectionsResult> {
   return new Promise((resolve, reject) => {
     getDirections(options, (result, status) => {
       if (status === google.maps.DirectionsStatus.OK && result) {
@@ -66,7 +76,9 @@ export function renderDirections(
  * Clears directions from a map
  * @param directionsRenderer - Directions renderer to clear
  */
-export function clearDirections(directionsRenderer: google.maps.DirectionsRenderer): void {
+export function clearDirections(
+  directionsRenderer: google.maps.DirectionsRenderer
+): void {
   directionsRenderer.setMap(null);
 }
 
@@ -77,10 +89,13 @@ export function clearDirections(directionsRenderer: google.maps.DirectionsRender
  */
 export function getDistanceMatrix(
   options: DistanceMatrixOptions,
-  callback: (result: DistanceMatrixResult[], status: google.maps.DistanceMatrixStatus) => void
+  callback: (
+    result: DistanceMatrixResult[],
+    status: google.maps.DistanceMatrixStatus
+  ) => void
 ): void {
   const distanceMatrixService = new google.maps.DistanceMatrixService();
-  
+
   const request: google.maps.DistanceMatrixRequest = {
     origins: options.origins,
     destinations: options.destinations,
@@ -93,7 +108,7 @@ export function getDistanceMatrix(
   distanceMatrixService.getDistanceMatrix(request, (result, status) => {
     if (status === google.maps.DistanceMatrixStatus.OK && result) {
       const distanceMatrixResults: DistanceMatrixResult[] = [];
-      
+
       result.rows.forEach((row, rowIndex) => {
         row.elements.forEach((element, elementIndex) => {
           distanceMatrixResults.push({
@@ -111,7 +126,7 @@ export function getDistanceMatrix(
           });
         });
       });
-      
+
       callback(distanceMatrixResults, status);
     } else {
       callback([], status);
@@ -124,7 +139,9 @@ export function getDistanceMatrix(
  * @param options - Distance matrix configuration options
  * @returns Promise that resolves with distance matrix results
  */
-export function getDistanceMatrixAsync(options: DistanceMatrixOptions): Promise<DistanceMatrixResult[]> {
+export function getDistanceMatrixAsync(
+  options: DistanceMatrixOptions
+): Promise<DistanceMatrixResult[]> {
   return new Promise((resolve, reject) => {
     getDistanceMatrix(options, (result, status) => {
       if (status === google.maps.DistanceMatrixStatus.OK) {
@@ -141,7 +158,9 @@ export function getDistanceMatrixAsync(options: DistanceMatrixOptions): Promise<
  * @param mapInstance - Map instance to create service for
  * @returns The directions service
  */
-export function createDirectionsService(mapInstance: MapInstance): google.maps.DirectionsService {
+export function createDirectionsService(
+  mapInstance: MapInstance
+): google.maps.DirectionsService {
   const directionsService = new google.maps.DirectionsService();
   mapInstance.directionsService = directionsService;
   return directionsService;
@@ -168,7 +187,9 @@ export function createDirectionsRenderer(
  * @param mapInstance - Map instance to create service for
  * @returns The distance matrix service
  */
-export function createDistanceMatrixService(mapInstance: MapInstance): google.maps.DistanceMatrixService {
+export function createDistanceMatrixService(
+  mapInstance: MapInstance
+): google.maps.DistanceMatrixService {
   const distanceMatrixService = new google.maps.DistanceMatrixService();
   mapInstance.distanceMatrixService = distanceMatrixService;
   return distanceMatrixService;
@@ -179,15 +200,17 @@ export function createDistanceMatrixService(mapInstance: MapInstance): google.ma
  * @param directionsResult - Directions result to calculate distance from
  * @returns Total distance in meters
  */
-export function getTotalDistance(directionsResult: google.maps.DirectionsResult): number {
+export function getTotalDistance(
+  directionsResult: google.maps.DirectionsResult
+): number {
   let totalDistance = 0;
-  
-  directionsResult.routes.forEach(route => {
-    route.legs.forEach(leg => {
+
+  directionsResult.routes.forEach((route) => {
+    route.legs.forEach((leg) => {
       totalDistance += leg.distance?.value || 0;
     });
   });
-  
+
   return totalDistance;
 }
 
@@ -196,15 +219,17 @@ export function getTotalDistance(directionsResult: google.maps.DirectionsResult)
  * @param directionsResult - Directions result to calculate duration from
  * @returns Total duration in seconds
  */
-export function getTotalDuration(directionsResult: google.maps.DirectionsResult): number {
+export function getTotalDuration(
+  directionsResult: google.maps.DirectionsResult
+): number {
   let totalDuration = 0;
-  
-  directionsResult.routes.forEach(route => {
-    route.legs.forEach(leg => {
+
+  directionsResult.routes.forEach((route) => {
+    route.legs.forEach((leg) => {
       totalDuration += leg.duration?.value || 0;
     });
   });
-  
+
   return totalDuration;
 }
 
@@ -213,15 +238,17 @@ export function getTotalDuration(directionsResult: google.maps.DirectionsResult)
  * @param directionsResult - Directions result to get bounds from
  * @returns Bounds of the route
  */
-export function getDirectionsBounds(directionsResult: google.maps.DirectionsResult): google.maps.LatLngBounds {
+export function getDirectionsBounds(
+  directionsResult: google.maps.DirectionsResult
+): google.maps.LatLngBounds {
   const bounds = new google.maps.LatLngBounds();
-  
-  directionsResult.routes.forEach(route => {
-    route.overview_path.forEach(point => {
+
+  directionsResult.routes.forEach((route) => {
+    route.overview_path.forEach((point) => {
       bounds.extend(point);
     });
   });
-  
+
   return bounds;
 }
 

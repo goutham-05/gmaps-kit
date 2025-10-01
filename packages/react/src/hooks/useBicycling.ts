@@ -22,31 +22,11 @@ export interface UseBicyclingReturn {
 }
 
 export function useBicycling(): UseBicyclingReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading] = useState(false);
+  const [error] = useState<Error | null>(null);
   const [bicyclingLayer, setBicyclingLayer] =
     useState<google.maps.BicyclingLayer | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => T): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = operation();
-        return data;
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Bicycling operation failed');
-        setError(error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
 
   const createBicyclingLayer = useCallback(
     (options?: BicyclingOptions): google.maps.BicyclingLayer => {

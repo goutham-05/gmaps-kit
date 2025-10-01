@@ -24,7 +24,9 @@ export interface UseGeocodingServiceReturn {
   error: Error | null;
   lastOperation: GeocodingOperation | null;
   geocode: (request: GeocodeRequest) => Promise<GeocodingResponse>;
-  reverseGeocode: (request: ReverseGeocodeRequest) => Promise<GeocodingResponse>;
+  reverseGeocode: (
+    request: ReverseGeocodeRequest
+  ) => Promise<GeocodingResponse>;
 }
 
 export function useGeocodingService(
@@ -101,7 +103,11 @@ export function useGeocodingService(
         return result;
       } catch (error) {
         if (isMountedRef.current) {
-          setState({ isLoading: false, lastOperation: operation, error: error as Error });
+          setState({
+            isLoading: false,
+            lastOperation: operation,
+            error: error as Error,
+          });
         }
         throw error;
       }
@@ -110,7 +116,8 @@ export function useGeocodingService(
   );
 
   const geocode = useCallback(
-    (request: GeocodeRequest) => runWithState('geocode', () => client.geocode(request)),
+    (request: GeocodeRequest) =>
+      runWithState('geocode', () => client.geocode(request)),
     [client, runWithState]
   );
 

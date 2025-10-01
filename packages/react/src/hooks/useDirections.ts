@@ -1,13 +1,10 @@
 import { useState, useCallback } from 'react';
 import {
-  getDirectionsAsync,
   getTotalDistance,
   getTotalDuration,
   getDirectionsBounds,
   fitMapToRoute,
-  createDirectionsService,
   createDirectionsRenderer,
-  clearDirections,
 } from '@gmaps-kit/core';
 import { MapInstance } from '@gmaps-kit/core';
 

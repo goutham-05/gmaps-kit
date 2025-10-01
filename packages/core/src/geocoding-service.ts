@@ -311,7 +311,7 @@ export class GeocodingClient {
   ): string | undefined {
     if (!components) return undefined;
     return Object.entries(components)
-      .filter(([_, value]) => value !== undefined && value !== '')
+      .filter(([, value]) => value !== undefined && value !== '')
       .map(([key, value]) => `${key}:${value}`)
       .join('|');
   }

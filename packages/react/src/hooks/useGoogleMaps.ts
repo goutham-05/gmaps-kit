@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  loadGoogleMaps,
-  isGoogleMapsLoaded,
-  waitForGoogleMaps,
-} from '@gmaps-kit/core';
+import { loadGoogleMaps, isGoogleMapsLoaded } from '@gmaps-kit/core';
 
 export interface UseGoogleMapsOptions {
   apiKey: string;

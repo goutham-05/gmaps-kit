@@ -2,40 +2,19 @@ import { useState, useCallback } from 'react';
 import {
   getDistanceMatrixAsync,
   createDistanceMatrixService,
+  DistanceMatrixOptions,
+  DistanceMatrixResult as CoreDistanceMatrixResult,
+  MapInstance,
 } from '@gmaps-kit/core';
 
-export interface DistanceMatrixRequest {
-  origins: (string | google.maps.LatLngLiteral)[];
-  destinations: (string | google.maps.LatLngLiteral)[];
-  travelMode?: google.maps.TravelMode;
-  avoidHighways?: boolean;
-  avoidTolls?: boolean;
-  departureTime?: Date;
-  trafficModel?: google.maps.TrafficModel;
-  transitOptions?: google.maps.TransitOptions;
-  unitSystem?: google.maps.UnitSystem;
-}
-
-export interface DistanceMatrixElement {
-  distance: {
-    text: string;
-    value: number; // in meters
-  };
-  duration: {
-    text: string;
-    value: number; // in seconds
-  };
-  duration_in_traffic?: {
-    text: string;
-    value: number; // in seconds
-  };
-  status: google.maps.DistanceMatrixElementStatus;
+export interface DistanceMatrixRequest extends DistanceMatrixOptions {
+  // Extended interface for React hook
 }
 
 export interface DistanceMatrixResult {
-  elements: DistanceMatrixElement[];
-  origins: string[];
-  destinations: string[];
+  results: CoreDistanceMatrixResult[];
+  origins: (string | google.maps.LatLngLiteral)[];
+  destinations: (string | google.maps.LatLngLiteral)[];
   service: google.maps.DistanceMatrixService | null;
 }
 
@@ -46,7 +25,9 @@ export interface UseDistanceMatrixReturn {
   getDistanceMatrix: (
     request: DistanceMatrixRequest
   ) => Promise<DistanceMatrixResult>;
-  createService: () => google.maps.DistanceMatrixService;
+  createService: (
+    mapInstance: MapInstance
+  ) => google.maps.DistanceMatrixService;
 }
 
 export function useDistanceMatrix(): UseDistanceMatrixReturn {
@@ -79,31 +60,20 @@ export function useDistanceMatrix(): UseDistanceMatrixReturn {
   const getDistanceMatrix = useCallback(
     async (request: DistanceMatrixRequest): Promise<DistanceMatrixResult> => {
       return handleAsyncOperation(async () => {
-        const matrix = await getDistanceMatrixAsync({
+        const results = await getDistanceMatrixAsync({
           origins: request.origins,
           destinations: request.destinations,
-          travelMode: request.travelMode || google.maps.TravelMode.DRIVING,
+          travelMode: request.travelMode,
           avoidHighways: request.avoidHighways,
           avoidTolls: request.avoidTolls,
-          departureTime: request.departureTime,
-          trafficModel: request.trafficModel,
-          transitOptions: request.transitOptions,
           unitSystem: request.unitSystem,
         });
 
-        const service = createDistanceMatrixService();
-
         const distanceMatrixResult: DistanceMatrixResult = {
-          elements: matrix,
-          origins: request.origins.map((origin) =>
-            typeof origin === 'string' ? origin : `${origin.lat},${origin.lng}`
-          ),
-          destinations: request.destinations.map((destination) =>
-            typeof destination === 'string'
-              ? destination
-              : `${destination.lat},${destination.lng}`
-          ),
-          service,
+          results,
+          origins: request.origins,
+          destinations: request.destinations,
+          service: null,
         };
 
         setResult(distanceMatrixResult);
@@ -113,11 +83,12 @@ export function useDistanceMatrix(): UseDistanceMatrixReturn {
     [handleAsyncOperation]
   );
 
-  const createService = useCallback((): google.maps.DistanceMatrixService => {
-    return handleAsyncOperation(() => {
-      return createDistanceMatrixService();
-    });
-  }, [handleAsyncOperation]);
+  const createService = useCallback(
+    (mapInstance: MapInstance): google.maps.DistanceMatrixService => {
+      return createDistanceMatrixService(mapInstance);
+    },
+    []
+  );
 
   return {
     isLoading,

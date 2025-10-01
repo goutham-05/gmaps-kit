@@ -14,7 +14,9 @@ export function createStreetViewPanorama(
   eventHandlers?: StreetViewEventHandlers
 ): StreetViewInstance {
   if (!window.google || !window.google.maps) {
-    throw new Error('Google Maps API is not loaded. Call loadGoogleMaps() first.');
+    throw new Error(
+      'Google Maps API is not loaded. Call loadGoogleMaps() first.'
+    );
   }
 
   const element =

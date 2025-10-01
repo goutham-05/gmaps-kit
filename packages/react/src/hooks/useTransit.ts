@@ -20,35 +20,15 @@ export interface UseTransitReturn {
 }
 
 export function useTransit(): UseTransitReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading] = useState(false);
+  const [error] = useState<Error | null>(null);
   const [transitLayer, setTransitLayer] =
     useState<google.maps.TransitLayer | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => T): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = operation();
-        return data;
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Transit operation failed');
-        setError(error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
   const createTransitLayer = useCallback(
     (options?: TransitOptions): google.maps.TransitLayer => {
-      return handleAsyncOperation(() => {
+      try {
         const transit = new google.maps.TransitLayer();
 
         if (options?.map) {
@@ -58,9 +38,15 @@ export function useTransit(): UseTransitReturn {
 
         setTransitLayer(transit);
         return transit;
-      });
+      } catch (err) {
+        const error =
+          err instanceof Error
+            ? err
+            : new Error('Transit layer creation failed');
+        throw error;
+      }
     },
-    [handleAsyncOperation]
+    []
   );
 
   const showTransit = useCallback(() => {

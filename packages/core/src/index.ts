@@ -70,10 +70,7 @@ export {
 } from './geocoding';
 
 // Geocoding web service client
-export {
-  GeocodingClient,
-  GeocodingApiError,
-} from './geocoding-service';
+export { GeocodingClient, GeocodingApiError } from './geocoding-service';
 
 export type {
   GeocodingClientOptions,

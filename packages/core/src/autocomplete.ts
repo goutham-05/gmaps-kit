@@ -6,11 +6,18 @@ import { AutocompleteOptions, MapInstance } from './types';
  * @param options - Autocomplete configuration options
  * @returns The created Autocomplete instance
  */
-export function createAutocomplete(options: AutocompleteOptions): google.maps.places.Autocomplete {
+export function createAutocomplete(
+  options: AutocompleteOptions
+): google.maps.places.Autocomplete {
   const autocomplete = new google.maps.places.Autocomplete(options.input, {
     bounds: options.bounds,
     componentRestrictions: options.componentRestrictions,
-    fields: options.fields || ['place_id', 'geometry', 'name', 'formatted_address'],
+    fields: options.fields || [
+      'place_id',
+      'geometry',
+      'name',
+      'formatted_address',
+    ],
     strictBounds: options.strictBounds,
     types: options.types,
   });
@@ -49,7 +56,9 @@ export function bindAutocompleteToMap(
  * @param autocomplete - Autocomplete instance
  * @returns The selected place or null
  */
-export function getSelectedPlace(autocomplete: google.maps.places.Autocomplete): google.maps.places.PlaceResult | null {
+export function getSelectedPlace(
+  autocomplete: google.maps.places.Autocomplete
+): google.maps.places.PlaceResult | null {
   return autocomplete.getPlace();
 }
 
@@ -109,7 +118,9 @@ export function setAutocompleteTypes(
  * @param autocomplete - Autocomplete instance
  * @returns Current bounds or null
  */
-export function getAutocompleteBounds(autocomplete: google.maps.places.Autocomplete): google.maps.LatLngBounds | null {
+export function getAutocompleteBounds(
+  autocomplete: google.maps.places.Autocomplete
+): google.maps.LatLngBounds | null {
   return autocomplete.getBounds() || null;
 }
 
@@ -129,7 +140,9 @@ export function getAutocompleteComponentRestrictions(
  * @param autocomplete - Autocomplete instance
  * @returns Current types array
  */
-export function getAutocompleteTypes(autocomplete: google.maps.places.Autocomplete): string[] {
+export function getAutocompleteTypes(
+  autocomplete: google.maps.places.Autocomplete
+): string[] {
   return autocomplete.get('types') || [];
 }
 
@@ -137,7 +150,9 @@ export function getAutocompleteTypes(autocomplete: google.maps.places.Autocomple
  * Clears the Autocomplete input
  * @param autocomplete - Autocomplete instance
  */
-export function clearAutocomplete(autocomplete: google.maps.places.Autocomplete): void {
+export function clearAutocomplete(
+  autocomplete: google.maps.places.Autocomplete
+): void {
   autocomplete.set('place', null);
 }
 
@@ -145,7 +160,9 @@ export function clearAutocomplete(autocomplete: google.maps.places.Autocomplete)
  * Focuses the Autocomplete input
  * @param autocomplete - Autocomplete instance
  */
-export function focusAutocomplete(autocomplete: google.maps.places.Autocomplete): void {
+export function focusAutocomplete(
+  autocomplete: google.maps.places.Autocomplete
+): void {
   autocomplete.getPlace();
 }
 
@@ -162,7 +179,7 @@ export function createSearchBox(
   bounds?: google.maps.LatLngBounds
 ): google.maps.places.SearchBox {
   const searchBox = new google.maps.places.SearchBox(input);
-  
+
   if (bounds) {
     searchBox.setBounds(bounds);
   }

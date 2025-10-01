@@ -66,8 +66,8 @@ export function useMapEvents(): UseMapEventsReturn {
               setEventState((prev) => ({
                 ...prev,
                 lastClickPosition: {
-                  lat: event.latLng.lat(),
-                  lng: event.latLng.lng(),
+                  lat: event.latLng!.lat(),
+                  lng: event.latLng!.lng(),
                 },
               }));
             }
@@ -85,8 +85,8 @@ export function useMapEvents(): UseMapEventsReturn {
               setEventState((prev) => ({
                 ...prev,
                 lastRightClickPosition: {
-                  lat: event.latLng.lat(),
-                  lng: event.latLng.lng(),
+                  lat: event.latLng!.lat(),
+                  lng: event.latLng!.lng(),
                 },
               }));
             }
@@ -213,7 +213,8 @@ export function useMapEvents(): UseMapEventsReturn {
   );
 
   const removeEventListeners = useCallback(
-    (mapInstance: MapInstance) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    (_mapInstance: MapInstance) => {
       listeners.forEach((listener) => {
         google.maps.event.removeListener(listener);
       });

@@ -4,7 +4,6 @@ import {
   removeMarker,
   updateMarkerPosition,
   updateMarkerContent,
-  clearMarkers,
   getMarkerPosition,
   setMarkerDraggable,
   addMarkerClickListener,

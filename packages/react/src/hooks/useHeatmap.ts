@@ -24,40 +24,20 @@ export interface UseHeatmapReturn {
   ) => google.maps.visualization.HeatmapLayer;
   updateHeatmapData: (data: HeatmapData[]) => void;
   setHeatmapOptions: (options: Partial<HeatmapOptions>) => void;
-  showHeatmap: () => void;
+  showHeatmap: (map?: google.maps.Map) => void;
   hideHeatmap: () => void;
   removeHeatmap: () => void;
 }
 
 export function useHeatmap(): UseHeatmapReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading] = useState(false);
+  const [error] = useState<Error | null>(null);
   const [heatmapLayer, setHeatmapLayer] =
     useState<google.maps.visualization.HeatmapLayer | null>(null);
 
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => T): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = operation();
-        return data;
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Heatmap operation failed');
-        setError(error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
   const createHeatmap = useCallback(
     (options: HeatmapOptions): google.maps.visualization.HeatmapLayer => {
-      return handleAsyncOperation(() => {
+      try {
         const heatmapData: google.maps.visualization.WeightedLocation[] =
           options.data.map((point) => ({
             location: new google.maps.LatLng(
@@ -82,9 +62,13 @@ export function useHeatmap(): UseHeatmapReturn {
         );
         setHeatmapLayer(heatmap);
         return heatmap;
-      });
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Heatmap creation failed');
+        throw error;
+      }
     },
-    [handleAsyncOperation]
+    []
   );
 
   const updateHeatmapData = useCallback(
@@ -127,11 +111,21 @@ export function useHeatmap(): UseHeatmapReturn {
     [heatmapLayer]
   );
 
-  const showHeatmap = useCallback(() => {
-    if (heatmapLayer) {
-      heatmapLayer.setMap(heatmapLayer.getMap());
-    }
-  }, [heatmapLayer]);
+  const showHeatmap = useCallback(
+    (map?: google.maps.Map) => {
+      if (heatmapLayer) {
+        if (map) {
+          heatmapLayer.setMap(map);
+        } else {
+          const currentMap = heatmapLayer.getMap();
+          if (currentMap) {
+            heatmapLayer.setMap(currentMap);
+          }
+        }
+      }
+    },
+    [heatmapLayer]
+  );
 
   const hideHeatmap = useCallback(() => {
     if (heatmapLayer) {

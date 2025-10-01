@@ -82,7 +82,10 @@ describe('Street View utilities', () => {
     const { panorama } = createStreetViewPanorama(container);
 
     setStreetViewPov(panorama, { heading: 180, pitch: -10 });
-    expect(mockPanorama.setPov).toHaveBeenCalledWith({ heading: 180, pitch: -10 });
+    expect(mockPanorama.setPov).toHaveBeenCalledWith({
+      heading: 180,
+      pitch: -10,
+    });
 
     getStreetViewPov(panorama);
     expect(mockPanorama.getPov).toHaveBeenCalled();
