@@ -29,6 +29,7 @@ const mockGoogleMaps = {
 Object.defineProperty(window, 'google', {
   value: { maps: mockGoogleMaps },
   writable: true,
+  configurable: true,
 });
 
 describe('Map Utilities', () => {
@@ -86,8 +87,8 @@ describe('Map Utilities', () => {
     });
 
     it('should throw error if Google Maps is not loaded', () => {
-      // @ts-ignore
-      global.window = {};
+      const originalGoogle = (window as any).google;
+      delete (window as any).google;
 
       const container = document.createElement('div');
       const options: MapOptions = {
@@ -98,6 +99,8 @@ describe('Map Utilities', () => {
       expect(() => createMap(container, options)).toThrow(
         'Google Maps API is not loaded'
       );
+
+      (window as any).google = originalGoogle;
     });
 
     it('should throw error if container element is not found', () => {

@@ -69,6 +69,28 @@ export {
   reverseGeocodeFirst,
 } from './geocoding';
 
+// Geocoding web service client
+export {
+  GeocodingClient,
+  GeocodingApiError,
+} from './geocoding-service';
+
+export type {
+  GeocodingClientOptions,
+  GeocodeRequest,
+  ReverseGeocodeRequest,
+  GeocodingResponse,
+  GeocodingResult,
+  GeocodingStatus,
+  GeocodingLatLngLiteral,
+  GeocodingBounds,
+  GeocodingGeometry,
+  GeocodingAddressComponent,
+  GeocodingPlusCode,
+  GeocodingRetryConfig,
+  GeocodingRetryStatus,
+} from './geocoding-service';
+
 // Directions utilities
 export {
   getDirections,
@@ -85,3 +107,53 @@ export {
   getDirectionsBounds,
   fitMapToRoute,
 } from './directions';
+
+// Places web service utilities
+export {
+  PlacesClient,
+  PlacesApiError,
+  createPlacesSessionToken,
+} from './places';
+
+export type {
+  PlacesClientOptions,
+  PlacesApiStatus,
+  PlacesFindPlaceRequest,
+  PlacesFindPlaceResponse,
+  PlacesTextSearchRequest,
+  PlacesTextSearchResponse,
+  PlacesNearbySearchRequest,
+  PlacesNearbySearchResponse,
+  PlacesDetailsRequest,
+  PlacesDetailsResponse,
+  PlacesAutocompleteRequest,
+  PlacesAutocompleteResponse,
+  PlacesQueryAutocompleteRequest,
+  PlacesQueryAutocompleteResponse,
+  PlacesPlace,
+  PlacesPrediction,
+  PlacesLatLngLiteral,
+  PlacesPhoto,
+  PlacesGeometry,
+  PlacesLocationBias,
+  PlacesPhotoOptions,
+  PlacesRetryConfig,
+  PlacesRetryStatus,
+} from './places';
+
+// Street View utilities
+export {
+  createStreetViewPanorama,
+  setStreetViewPosition,
+  getStreetViewPosition,
+  setStreetViewPov,
+  getStreetViewPov,
+  setStreetViewVisibility,
+  isStreetViewVisible,
+} from './street-view';
+
+export type {
+  StreetViewOptions,
+  StreetViewEventHandlers,
+  StreetViewInstance,
+} from './types';

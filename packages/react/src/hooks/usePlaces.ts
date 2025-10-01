@@ -1,269 +1,214 @@
-import { useState, useCallback } from 'react';
-import {
-  createAutocomplete,
-  createSearchBox,
-  getSelectedPlace,
-  addPlaceChangedListener,
-  addPlacesChangedListener,
-  setAutocompleteTypes,
-  setAutocompleteBounds,
-  setAutocompleteComponentRestrictions,
-  clearAutocomplete,
-  focusAutocomplete,
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  PlacesClientOptions,
+  PlacesFindPlaceRequest,
+  PlacesFindPlaceResponse,
+  PlacesTextSearchRequest,
+  PlacesTextSearchResponse,
+  PlacesNearbySearchRequest,
+  PlacesNearbySearchResponse,
+  PlacesDetailsRequest,
+  PlacesDetailsResponse,
+  PlacesAutocompleteRequest,
+  PlacesAutocompleteResponse,
+  PlacesQueryAutocompleteRequest,
+  PlacesQueryAutocompleteResponse,
+  PlacesPhotoOptions,
 } from '@gmaps-kit/core';
+import { PlacesClient } from '@gmaps-kit/core';
+import type { PlacesApiError } from '@gmaps-kit/core';
 
-export interface PlaceResult {
-  placeId?: string;
-  name?: string;
-  address?: string;
-  location?: google.maps.LatLngLiteral;
-  rating?: number;
-  priceLevel?: number;
-  types?: string[];
-  photos?: google.maps.places.PlacePhoto[];
-  reviews?: google.maps.places.PlaceReview[];
-}
+type PlacesOperationName =
+  | 'findPlaceFromText'
+  | 'textSearch'
+  | 'nearbySearch'
+  | 'placeDetails'
+  | 'autocomplete'
+  | 'queryAutocomplete'
+  | 'textSearchNextPage'
+  | 'nearbySearchNextPage';
 
-export interface UsePlacesOptions {
-  input: HTMLInputElement;
-  types?: string[];
-  bounds?: google.maps.LatLngBounds;
-  componentRestrictions?: google.maps.GeocoderComponentRestrictions;
-  onPlaceChanged?: (place: google.maps.places.PlaceResult) => void;
-  onPlacesChanged?: (places: google.maps.places.PlaceResult[]) => void;
+export interface UsePlacesOptions extends PlacesClientOptions {}
+
+interface PlacesHookState {
+  isLoading: boolean;
+  lastOperation: PlacesOperationName | null;
+  error: Error | null;
 }
 
 export interface UsePlacesReturn {
+  client: PlacesClient;
   isLoading: boolean;
   error: Error | null;
-  autocomplete: google.maps.places.Autocomplete | null;
-  searchBox: google.maps.places.SearchBox | null;
-  selectedPlace: google.maps.places.PlaceResult | null;
-  places: google.maps.places.PlaceResult[];
-  createAutocompleteInstance: (
-    options: UsePlacesOptions
-  ) => google.maps.places.Autocomplete;
-  createSearchBoxInstance: (
-    input: HTMLInputElement,
-    map: google.maps.Map
-  ) => google.maps.places.SearchBox;
-  getSelectedPlaceFromAutocomplete: (
-    autocomplete: google.maps.places.Autocomplete
-  ) => google.maps.places.PlaceResult | null;
-  setAutocompleteTypes: (
-    autocomplete: google.maps.places.Autocomplete,
-    types: string[]
-  ) => void;
-  setAutocompleteBounds: (
-    autocomplete: google.maps.places.Autocomplete,
-    bounds: google.maps.LatLngBounds
-  ) => void;
-  setAutocompleteComponentRestrictions: (
-    autocomplete: google.maps.places.Autocomplete,
-    restrictions: google.maps.GeocoderComponentRestrictions
-  ) => void;
-  clearAutocompleteInput: (
-    autocomplete: google.maps.places.Autocomplete
-  ) => void;
-  focusAutocompleteInput: (
-    autocomplete: google.maps.places.Autocomplete
-  ) => void;
-  addPlaceChangedListenerToAutocomplete: (
-    autocomplete: google.maps.places.Autocomplete,
-    callback: (place: google.maps.places.PlaceResult) => void
-  ) => void;
-  addPlacesChangedListenerToSearchBox: (
-    searchBox: google.maps.places.SearchBox,
-    callback: (places: google.maps.places.PlaceResult[]) => void
-  ) => void;
+  lastOperation: PlacesOperationName | null;
+  findPlaceFromText: (
+    request: PlacesFindPlaceRequest
+  ) => Promise<PlacesFindPlaceResponse>;
+  textSearch: (
+    request: PlacesTextSearchRequest
+  ) => Promise<PlacesTextSearchResponse>;
+  nearbySearch: (
+    request: PlacesNearbySearchRequest
+  ) => Promise<PlacesNearbySearchResponse>;
+  placeDetails: (
+    request: PlacesDetailsRequest
+  ) => Promise<PlacesDetailsResponse>;
+  autocomplete: (
+    request: PlacesAutocompleteRequest
+  ) => Promise<PlacesAutocompleteResponse>;
+  queryAutocomplete: (
+    request: PlacesQueryAutocompleteRequest
+  ) => Promise<PlacesQueryAutocompleteResponse>;
+  textSearchNextPage: (
+    pagetoken: string,
+    delayMs?: number
+  ) => Promise<PlacesTextSearchResponse>;
+  nearbySearchNextPage: (
+    pagetoken: string,
+    delayMs?: number
+  ) => Promise<PlacesNearbySearchResponse>;
+  buildPhotoUrl: (photoReference: string, options?: PlacesPhotoOptions) => string;
 }
 
-export function usePlaces(): UsePlacesReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [autocomplete, setAutocomplete] =
-    useState<google.maps.places.Autocomplete | null>(null);
-  const [searchBox, setSearchBox] =
-    useState<google.maps.places.SearchBox | null>(null);
-  const [selectedPlace, setSelectedPlace] =
-    useState<google.maps.places.PlaceResult | null>(null);
-  const [places, setPlaces] = useState<google.maps.places.PlaceResult[]>([]);
+/**
+ * React hook that exposes a typed interface for the Google Places Web Service.
+ * Consumers provide an API key and optionally a custom fetch implementation for server-side usage.
+ */
+export function usePlaces(options: UsePlacesOptions): UsePlacesReturn {
+  const { apiKey, baseUrl, fetchImpl, language, region, requestInit } = options;
 
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => T): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
+  const client = useMemo(
+    () =>
+      new PlacesClient({
+        apiKey,
+        baseUrl,
+        fetchImpl,
+        language,
+        region,
+        requestInit,
+      }),
+    [apiKey, baseUrl, fetchImpl, language, region, requestInit]
+  );
+
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const [state, setState] = useState<PlacesHookState>({
+    isLoading: false,
+    lastOperation: null,
+    error: null,
+  });
+
+  const pendingCountRef = useRef(0);
+
+  const runWithState = useCallback(
+    async <T>(operation: PlacesOperationName, executor: () => Promise<T>): Promise<T> => {
+      pendingCountRef.current += 1;
+      if (isMountedRef.current) {
+        setState((previous) => ({
+          isLoading: true,
+          lastOperation: previous.lastOperation,
+          error: null,
+        }));
+      }
+
+      let capturedError: Error | null = null;
 
       try {
-        const result = operation();
-        return result;
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error('Places operation failed');
-        setError(error);
+        return await executor();
+      } catch (error) {
+        capturedError = error as Error;
         throw error;
       } finally {
-        setIsLoading(false);
+        pendingCountRef.current = Math.max(0, pendingCountRef.current - 1);
+        if (isMountedRef.current) {
+          setState({
+            isLoading: pendingCountRef.current > 0,
+            lastOperation: operation,
+            error: capturedError,
+          });
+        }
       }
     },
     []
   );
 
-  const createAutocompleteInstance = useCallback(
-    (options: UsePlacesOptions): google.maps.places.Autocomplete => {
-      return handleAsyncOperation(() => {
-        const autocompleteInstance = createAutocomplete({
-          input: options.input,
-          types: options.types,
-          bounds: options.bounds,
-          componentRestrictions: options.componentRestrictions,
-        });
-
-        if (options.onPlaceChanged) {
-          addPlaceChangedListener(autocompleteInstance, (place) => {
-            setSelectedPlace(place);
-            options.onPlaceChanged?.(place);
-          });
-        }
-
-        setAutocomplete(autocompleteInstance);
-        return autocompleteInstance;
-      });
-    },
-    [handleAsyncOperation]
+  const findPlaceFromText = useCallback(
+    (request: PlacesFindPlaceRequest) =>
+      runWithState('findPlaceFromText', () => client.findPlaceFromText(request)),
+    [client, runWithState]
   );
 
-  const createSearchBoxInstance = useCallback(
-    (
-      input: HTMLInputElement,
-      map: google.maps.Map
-    ): google.maps.places.SearchBox => {
-      return handleAsyncOperation(() => {
-        const searchBoxInstance = createSearchBox(input, map);
-        setSearchBox(searchBoxInstance);
-        return searchBoxInstance;
-      });
-    },
-    [handleAsyncOperation]
+  const textSearch = useCallback(
+    (request: PlacesTextSearchRequest) =>
+      runWithState('textSearch', () => client.textSearch(request)),
+    [client, runWithState]
   );
 
-  const getSelectedPlaceFromAutocomplete = useCallback(
-    (
-      autocompleteInstance: google.maps.places.Autocomplete
-    ): google.maps.places.PlaceResult | null => {
-      return handleAsyncOperation(() => {
-        const place = getSelectedPlace(autocompleteInstance);
-        setSelectedPlace(place);
-        return place;
-      });
-    },
-    [handleAsyncOperation]
+  const nearbySearch = useCallback(
+    (request: PlacesNearbySearchRequest) =>
+      runWithState('nearbySearch', () => client.nearbySearch(request)),
+    [client, runWithState]
   );
 
-  const setAutocompleteTypesToInstance = useCallback(
-    (
-      autocompleteInstance: google.maps.places.Autocomplete,
-      types: string[]
-    ) => {
-      handleAsyncOperation(() => {
-        setAutocompleteTypes(autocompleteInstance, types);
-      });
-    },
-    [handleAsyncOperation]
+  const placeDetails = useCallback(
+    (request: PlacesDetailsRequest) =>
+      runWithState('placeDetails', () => client.placeDetails(request)),
+    [client, runWithState]
   );
 
-  const setAutocompleteBoundsToInstance = useCallback(
-    (
-      autocompleteInstance: google.maps.places.Autocomplete,
-      bounds: google.maps.LatLngBounds
-    ) => {
-      handleAsyncOperation(() => {
-        setAutocompleteBounds(autocompleteInstance, bounds);
-      });
-    },
-    [handleAsyncOperation]
+  const autocomplete = useCallback(
+    (request: PlacesAutocompleteRequest) =>
+      runWithState('autocomplete', () => client.autocomplete(request)),
+    [client, runWithState]
   );
 
-  const setAutocompleteComponentRestrictionsToInstance = useCallback(
-    (
-      autocompleteInstance: google.maps.places.Autocomplete,
-      restrictions: google.maps.GeocoderComponentRestrictions
-    ) => {
-      handleAsyncOperation(() => {
-        setAutocompleteComponentRestrictions(
-          autocompleteInstance,
-          restrictions
-        );
-      });
-    },
-    [handleAsyncOperation]
+  const queryAutocomplete = useCallback(
+    (request: PlacesQueryAutocompleteRequest) =>
+      runWithState('queryAutocomplete', () => client.queryAutocomplete(request)),
+    [client, runWithState]
   );
 
-  const clearAutocompleteInput = useCallback(
-    (autocompleteInstance: google.maps.places.Autocomplete) => {
-      handleAsyncOperation(() => {
-        clearAutocomplete(autocompleteInstance);
-      });
-    },
-    [handleAsyncOperation]
+  const textSearchNextPage = useCallback(
+    (pagetoken: string, delayMs?: number) =>
+      runWithState('textSearchNextPage', () =>
+        client.textSearchNextPage(pagetoken, delayMs)
+      ),
+    [client, runWithState]
   );
 
-  const focusAutocompleteInput = useCallback(
-    (autocompleteInstance: google.maps.places.Autocomplete) => {
-      handleAsyncOperation(() => {
-        focusAutocomplete(autocompleteInstance);
-      });
-    },
-    [handleAsyncOperation]
+  const nearbySearchNextPage = useCallback(
+    (pagetoken: string, delayMs?: number) =>
+      runWithState('nearbySearchNextPage', () =>
+        client.nearbySearchNextPage(pagetoken, delayMs)
+      ),
+    [client, runWithState]
   );
 
-  const addPlaceChangedListenerToAutocomplete = useCallback(
-    (
-      autocompleteInstance: google.maps.places.Autocomplete,
-      callback: (place: google.maps.places.PlaceResult) => void
-    ) => {
-      handleAsyncOperation(() => {
-        addPlaceChangedListener(autocompleteInstance, (place) => {
-          setSelectedPlace(place);
-          callback(place);
-        });
-      });
-    },
-    [handleAsyncOperation]
-  );
-
-  const addPlacesChangedListenerToSearchBox = useCallback(
-    (
-      searchBoxInstance: google.maps.places.SearchBox,
-      callback: (places: google.maps.places.PlaceResult[]) => void
-    ) => {
-      handleAsyncOperation(() => {
-        addPlacesChangedListener(searchBoxInstance, (places) => {
-          setPlaces(places);
-          callback(places);
-        });
-      });
-    },
-    [handleAsyncOperation]
+  const buildPhotoUrl = useCallback<UsePlacesReturn['buildPhotoUrl']>(
+    (photoReference, photoOptions) => client.buildPhotoUrl(photoReference, photoOptions),
+    [client]
   );
 
   return {
-    isLoading,
-    error,
+    client,
+    isLoading: state.isLoading,
+    error: state.error,
+    lastOperation: state.lastOperation,
+    findPlaceFromText,
+    textSearch,
+    nearbySearch,
+    placeDetails,
     autocomplete,
-    searchBox,
-    selectedPlace,
-    places,
-    createAutocompleteInstance,
-    createSearchBoxInstance,
-    getSelectedPlaceFromAutocomplete,
-    setAutocompleteTypes: setAutocompleteTypesToInstance,
-    setAutocompleteBounds: setAutocompleteBoundsToInstance,
-    setAutocompleteComponentRestrictions:
-      setAutocompleteComponentRestrictionsToInstance,
-    clearAutocompleteInput,
-    focusAutocompleteInput,
-    addPlaceChangedListenerToAutocomplete,
-    addPlacesChangedListenerToSearchBox,
+    queryAutocomplete,
+    textSearchNextPage,
+    nearbySearchNextPage,
+    buildPhotoUrl,
   };
 }
+
+export type PlacesHookError = PlacesApiError;

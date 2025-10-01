@@ -1,160 +1,109 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createStreetViewPanorama,
+  setStreetViewPosition,
+  getStreetViewPosition,
+  setStreetViewPov,
+  getStreetViewPov,
+  setStreetViewVisibility,
+  isStreetViewVisible,
+} from '@gmaps-kit/core';
+import type {
+  StreetViewOptions,
+  StreetViewEventHandlers,
+  StreetViewInstance,
+} from '@gmaps-kit/core';
 
-export interface StreetViewRequest {
-  location?: google.maps.LatLngLiteral;
-  pano?: string;
-  radius?: number;
-  source?: google.maps.StreetViewSource;
-}
-
-export interface StreetViewPanoramaData {
-  location: google.maps.StreetViewLocation;
-  links: google.maps.StreetViewLink[];
-  copyright: string;
-  tiles: {
-    worldSize: google.maps.Size;
-    tileSize: google.maps.Size;
-    centerHeading: number;
-  };
+export interface UseStreetViewOptions extends StreetViewOptions {
+  eventHandlers?: StreetViewEventHandlers;
 }
 
 export interface UseStreetViewReturn {
-  isLoading: boolean;
-  error: Error | null;
-  panoramaData: StreetViewPanoramaData | null;
-  getPanorama: (request: StreetViewRequest) => Promise<StreetViewPanoramaData>;
-  createPanorama: (
-    container: string | HTMLElement,
-    options?: google.maps.StreetViewPanoramaOptions
-  ) => google.maps.StreetViewPanorama;
-  getPanoramaByLocation: (
-    location: google.maps.LatLngLiteral,
-    radius?: number
-  ) => Promise<StreetViewPanoramaData>;
-  getPanoramaById: (panoId: string) => Promise<StreetViewPanoramaData>;
+  instance: StreetViewInstance | null;
+  isReady: boolean;
+  setPosition: (position: google.maps.LatLngLiteral) => void;
+  getPosition: () => google.maps.LatLngLiteral | null;
+  setPov: (pov: google.maps.StreetViewPov) => void;
+  getPov: () => google.maps.StreetViewPov | null;
+  setVisible: (visible: boolean) => void;
+  isVisible: () => boolean;
 }
 
-export function useStreetView(): UseStreetViewReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [panoramaData, setPanoramaData] =
-    useState<StreetViewPanoramaData | null>(null);
+export function useStreetView(
+  containerId: string,
+  options: UseStreetViewOptions = {}
+): UseStreetViewReturn {
+  const [instance, setInstance] = useState<StreetViewInstance | null>(null);
+  const [isReady, setReady] = useState(false);
 
-  const handleAsyncOperation = useCallback(
-    async <T>(operation: () => Promise<T>): Promise<T> => {
-      setIsLoading(true);
-      setError(null);
+  const memoizedHandlers = useMemo(() => options.eventHandlers, [options.eventHandlers]);
 
-      try {
-        const data = await operation();
-        return data;
-      } catch (err) {
-        const error =
-          err instanceof Error
-            ? err
-            : new Error('Street View operation failed');
-        setError(error);
-        throw error;
-      } finally {
-        setIsLoading(false);
+  const initialize = useCallback(() => {
+    if (!containerId || instance) return;
+
+    try {
+      const panorama = createStreetViewPanorama(containerId, options, memoizedHandlers);
+      setInstance(panorama);
+      setReady(true);
+    } catch (error) {
+      console.error('Failed to initialize Street View panorama:', error);
+    }
+  }, [containerId, instance, options, memoizedHandlers]);
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  const setPosition = useCallback(
+    (position: google.maps.LatLngLiteral) => {
+      if (instance) {
+        setStreetViewPosition(instance.panorama, position);
       }
     },
-    []
+    [instance]
   );
 
-  const getPanorama = useCallback(
-    async (request: StreetViewRequest): Promise<StreetViewPanoramaData> => {
-      return handleAsyncOperation(async () => {
-        const streetViewService = new google.maps.StreetViewService();
+  const getPosition = useCallback(() => {
+    if (!instance) return null;
+    return getStreetViewPosition(instance.panorama);
+  }, [instance]);
 
-        const panoramaRequest: google.maps.StreetViewPanoramaRequest = {
-          location: request.location,
-          pano: request.pano,
-          radius: request.radius,
-          source: request.source,
-        };
-
-        const result = await new Promise<google.maps.StreetViewPanoramaData>(
-          (resolve, reject) => {
-            streetViewService.getPanorama(panoramaRequest, (data, status) => {
-              if (status === google.maps.StreetViewStatus.OK && data) {
-                resolve(data);
-              } else {
-                reject(new Error(`Street View request failed: ${status}`));
-              }
-            });
-          }
-        );
-
-        const streetViewData: StreetViewPanoramaData = {
-          location: result.location,
-          links: result.links,
-          copyright: result.copyright,
-          tiles: result.tiles,
-        };
-
-        setPanoramaData(streetViewData);
-        return streetViewData;
-      });
+  const setPov = useCallback(
+    (pov: google.maps.StreetViewPov) => {
+      if (instance) {
+        setStreetViewPov(instance.panorama, pov);
+      }
     },
-    [handleAsyncOperation]
+    [instance]
   );
 
-  const createPanorama = useCallback(
-    (
-      container: string | HTMLElement,
-      options?: google.maps.StreetViewPanoramaOptions
-    ): google.maps.StreetViewPanorama => {
-      const panoramaOptions: google.maps.StreetViewPanoramaOptions = {
-        position: options?.position || { lat: 40.7128, lng: -74.006 },
-        pov: options?.pov || { heading: 0, pitch: 0 },
-        zoom: options?.zoom || 1,
-        visible: options?.visible !== false,
-        disableDefaultUI: options?.disableDefaultUI || false,
-        scrollwheel: options?.scrollwheel !== false,
-        disableDoubleClickZoom: options?.disableDoubleClickZoom || false,
-        clickToGo: options?.clickToGo !== false,
-        controlSize: options?.controlSize || 40,
-        fullscreenControl: options?.fullscreenControl !== false,
-        linksControl: options?.linksControl !== false,
-        panControl: options?.panControl !== false,
-        zoomControl: options?.zoomControl !== false,
-        addressControl: options?.addressControl !== false,
-        motionTracking: options?.motionTracking || false,
-        motionTrackingControl: options?.motionTrackingControl !== false,
-        showRoadLabels: options?.showRoadLabels !== false,
-        ...options,
-      };
+  const getPov = useCallback(() => {
+    if (!instance) return null;
+    return getStreetViewPov(instance.panorama);
+  }, [instance]);
 
-      return new google.maps.StreetViewPanorama(container, panoramaOptions);
+  const setVisible = useCallback(
+    (visible: boolean) => {
+      if (instance) {
+        setStreetViewVisibility(instance.panorama, visible);
+      }
     },
-    []
+    [instance]
   );
 
-  const getPanoramaByLocation = useCallback(
-    async (
-      location: google.maps.LatLngLiteral,
-      radius?: number
-    ): Promise<StreetViewPanoramaData> => {
-      return getPanorama({ location, radius });
-    },
-    [getPanorama]
-  );
-
-  const getPanoramaById = useCallback(
-    async (panoId: string): Promise<StreetViewPanoramaData> => {
-      return getPanorama({ pano: panoId });
-    },
-    [getPanorama]
-  );
+  const isVisible = useCallback(() => {
+    if (!instance) return false;
+    return isStreetViewVisible(instance.panorama);
+  }, [instance]);
 
   return {
-    isLoading,
-    error,
-    panoramaData,
-    getPanorama,
-    createPanorama,
-    getPanoramaByLocation,
-    getPanoramaById,
+    instance,
+    isReady,
+    setPosition,
+    getPosition,
+    setPov,
+    getPov,
+    setVisible,
+    isVisible,
   };
 }

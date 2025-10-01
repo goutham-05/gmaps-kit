@@ -69,6 +69,17 @@ import {
   getTotalDuration,
   getDirectionsBounds,
   fitMapToRoute,
+  // NEW: Web Service Clients
+  GeocodingClient,
+  PlacesClient,
+  // NEW: Street View utilities
+  createStreetViewPanorama,
+  setStreetViewPosition,
+  getStreetViewPosition,
+  setStreetViewPov,
+  getStreetViewPov,
+  setStreetViewVisibility,
+  isStreetViewVisible,
 } from '@gmaps-kit/core';
 
 // Helper functions for function documentation
@@ -468,6 +479,12 @@ function App() {
   const [autocompleteInput, setAutocompleteInput] = useState('');
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(0);
 
+  // NEW: Web service clients state
+  const [geocodingClient, setGeocodingClient] =
+    useState<GeocodingClient | null>(null);
+  const [placesClient, setPlacesClient] = useState<PlacesClient | null>(null);
+  const [streetViewInstance, setStreetViewInstance] = useState<any>(null);
+
   const handleLoadMaps = async () => {
     if (!apiKey || apiKey === 'YOUR_API_KEY') {
       setStatus('⚠️ Please enter a valid Google Maps API key');
@@ -491,6 +508,13 @@ function App() {
       });
 
       setMapInstance(map);
+
+      // Initialize web service clients
+      const geocoding = new GeocodingClient({ apiKey });
+      const places = new PlacesClient({ apiKey });
+      setGeocodingClient(geocoding);
+      setPlacesClient(places);
+
       setStatus('✅ Map created! Ready to explore gmaps-kit/core features');
     } catch (error) {
       setStatus(`❌ Error: ${error.message}`);
@@ -1919,6 +1943,299 @@ function App() {
         },
       ],
     },
+    {
+      category: '🌐 Geocoding Web Service',
+      functions: [
+        {
+          name: 'geocodingClient.geocode',
+          description: 'Geocode address using REST API',
+          action: async () => {
+            if (!geocodingClient) return;
+            try {
+              setStatus(`🔍 Geocoding via REST API: ${userAddress}...`);
+              const response = await geocodingClient.geocode({
+                address: userAddress,
+                language: 'en',
+                region: 'us',
+              });
+
+              if (response.results.length > 0) {
+                const result = response.results[0];
+                const marker = addMarker(mapInstance.map, {
+                  position: {
+                    lat: result.geometry.location.lat,
+                    lng: result.geometry.location.lng,
+                  },
+                  title: result.formatted_address,
+                });
+                setMarkers([...markers, marker]);
+                setStatus(`✅ REST Geocoding: ${result.formatted_address}`);
+              } else {
+                setStatus('❌ No results found via REST API');
+              }
+            } catch (error) {
+              setStatus(`❌ REST Geocoding failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'geocodingClient.reverseGeocode',
+          description: 'Reverse geocode using REST API',
+          action: async () => {
+            if (!geocodingClient) return;
+            try {
+              const [lat, lng] = userCoordinates.split(',').map(Number);
+              setStatus('🔍 Reverse geocoding via REST API...');
+              const response = await geocodingClient.reverseGeocode({
+                latlng: { lat, lng },
+                language: 'en',
+              });
+
+              if (response.results.length > 0) {
+                const result = response.results[0];
+                setStatus(
+                  `✅ REST Reverse Geocoding: ${result.formatted_address}`
+                );
+              } else {
+                setStatus('❌ No results found via REST API');
+              }
+            } catch (error) {
+              setStatus(`❌ REST Reverse Geocoding failed: ${error.message}`);
+            }
+          },
+        },
+      ],
+    },
+    {
+      category: '🏪 Places Web Service',
+      functions: [
+        {
+          name: 'placesClient.textSearch',
+          description: 'Search places using REST API',
+          action: async () => {
+            if (!placesClient) return;
+            try {
+              setStatus(`🏪 Searching places via REST API: ${searchPlace}...`);
+              const response = await placesClient.textSearch({
+                query: `${searchPlace} in New York`,
+                language: 'en',
+                region: 'us',
+              });
+
+              if (response.results.length > 0) {
+                const result = response.results[0];
+                const marker = addMarker(mapInstance.map, {
+                  position: {
+                    lat: result.geometry.location.lat,
+                    lng: result.geometry.location.lng,
+                  },
+                  title: result.name || 'Found Place',
+                });
+                setMarkers([...markers, marker]);
+                setStatus(`✅ Found via REST API: ${result.name || 'Place'}`);
+              } else {
+                setStatus('❌ No places found via REST API');
+              }
+            } catch (error) {
+              setStatus(`❌ Places REST API failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'placesClient.nearbySearch',
+          description: 'Search nearby places using REST API',
+          action: async () => {
+            if (!placesClient) return;
+            try {
+              const center = getMapCenter(mapInstance.map);
+              setStatus('🏪 Searching nearby places via REST API...');
+              const response = await placesClient.nearbySearch({
+                location: center,
+                radius: 1000,
+                type: 'restaurant',
+                language: 'en',
+              });
+
+              if (response.results.length > 0) {
+                const result = response.results[0];
+                const marker = addMarker(mapInstance.map, {
+                  position: {
+                    lat: result.geometry.location.lat,
+                    lng: result.geometry.location.lng,
+                  },
+                  title: result.name || 'Nearby Place',
+                });
+                setMarkers([...markers, marker]);
+                setStatus(`✅ Found nearby: ${result.name || 'Place'}`);
+              } else {
+                setStatus('❌ No nearby places found via REST API');
+              }
+            } catch (error) {
+              setStatus(`❌ Nearby search failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'placesClient.placeDetails',
+          description: 'Get place details using REST API',
+          action: async () => {
+            if (!placesClient) return;
+            try {
+              setStatus('🏪 Getting place details via REST API...');
+              // Use a well-known place ID for demo
+              const response = await placesClient.placeDetails({
+                placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4', // Times Square
+                fields: ['name', 'formatted_address', 'rating', 'types'],
+                language: 'en',
+              });
+
+              const place = response.result;
+              setStatus(
+                `✅ Place Details: ${place.name} - ${place.formatted_address} (Rating: ${place.rating || 'N/A'})`
+              );
+            } catch (error) {
+              setStatus(`❌ Place details failed: ${error.message}`);
+            }
+          },
+        },
+      ],
+    },
+    {
+      category: '🛣️ Street View',
+      functions: [
+        {
+          name: 'createStreetViewPanorama',
+          description: 'Create Street View panorama',
+          action: () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('🛣️ Creating Street View panorama...');
+              const streetView = createStreetViewPanorama(
+                'street-view-container',
+                {
+                  position: { lat: 40.758, lng: -73.9855 }, // Times Square
+                  pov: { heading: 0, pitch: 0 },
+                  zoom: 1,
+                }
+              );
+              setStreetViewInstance(streetView);
+              setStatus('✅ Street View panorama created!');
+            } catch (error) {
+              setStatus(`❌ Street View creation failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'setStreetViewPosition',
+          description: 'Update Street View position',
+          action: () => {
+            if (!streetViewInstance) {
+              setStatus('⚠️ Create Street View first');
+              return;
+            }
+            try {
+              const [lat, lng] = userCoordinates.split(',').map(Number);
+              setStreetViewPosition(streetViewInstance.panorama, { lat, lng });
+              setStatus(
+                `🛣️ Street View position updated to ${userCoordinates}`
+              );
+            } catch (error) {
+              setStatus(
+                `❌ Street View position update failed: ${error.message}`
+              );
+            }
+          },
+        },
+        {
+          name: 'setStreetViewPov',
+          description: 'Update Street View point of view',
+          action: () => {
+            if (!streetViewInstance) {
+              setStatus('⚠️ Create Street View first');
+              return;
+            }
+            try {
+              setStreetViewPov(streetViewInstance.panorama, {
+                heading: 90,
+                pitch: 10,
+              });
+              setStatus(
+                '🛣️ Street View POV updated (heading: 90°, pitch: 10°)'
+              );
+            } catch (error) {
+              setStatus(`❌ Street View POV update failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'getStreetViewPosition',
+          description: 'Get current Street View position',
+          action: () => {
+            if (!streetViewInstance) {
+              setStatus('⚠️ Create Street View first');
+              return;
+            }
+            try {
+              const position = getStreetViewPosition(
+                streetViewInstance.panorama
+              );
+              if (position) {
+                setStatus(
+                  `🛣️ Street View position: ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`
+                );
+              } else {
+                setStatus('❌ Could not get Street View position');
+              }
+            } catch (error) {
+              setStatus(
+                `❌ Failed to get Street View position: ${error.message}`
+              );
+            }
+          },
+        },
+        {
+          name: 'getStreetViewPov',
+          description: 'Get current Street View POV',
+          action: () => {
+            if (!streetViewInstance) {
+              setStatus('⚠️ Create Street View first');
+              return;
+            }
+            try {
+              const pov = getStreetViewPov(streetViewInstance.panorama);
+              setStatus(
+                `🛣️ Street View POV: heading ${pov.heading}°, pitch ${pov.pitch}°`
+              );
+            } catch (error) {
+              setStatus(`❌ Failed to get Street View POV: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'setStreetViewVisibility',
+          description: 'Toggle Street View visibility',
+          action: () => {
+            if (!streetViewInstance) {
+              setStatus('⚠️ Create Street View first');
+              return;
+            }
+            try {
+              const isVisible = isStreetViewVisible(
+                streetViewInstance.panorama
+              );
+              setStreetViewVisibility(streetViewInstance.panorama, !isVisible);
+              setStatus(
+                `🛣️ Street View visibility: ${!isVisible ? 'Shown' : 'Hidden'}`
+              );
+            } catch (error) {
+              setStatus(
+                `❌ Street View visibility toggle failed: ${error.message}`
+              );
+            }
+          },
+        },
+      ],
+    },
   ];
 
   // If React package is selected, render the React demo with package selector
@@ -2308,6 +2625,38 @@ function App() {
                   />
                   <p className="text-sm text-gray-500 mt-3">
                     Type an address and press Enter to search and add to map
+                  </p>
+                </div>
+              )}
+
+              {/* Street View Container */}
+              {isLoaded && (
+                <div className="mt-6 google-card">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">
+                    🛣️ Street View
+                  </h4>
+                  <div
+                    id="street-view-container"
+                    className="h-64 w-full bg-gray-100 flex items-center justify-center text-gray-500 rounded-lg"
+                  >
+                    {!streetViewInstance ? (
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🛣️</div>
+                        <div className="text-sm">
+                          Click "Create Street View panorama" in sidebar
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">✅</div>
+                        <div className="text-sm">
+                          Street View panorama active
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-3">
+                    Street View panorama will appear here when created
                   </p>
                 </div>
               )}

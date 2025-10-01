@@ -31,11 +31,10 @@ export function createMap(
   }
 
   // Create the map
-  const map = new google.maps.Map(mapContainer, {
+  const mapOptions: google.maps.MapOptions = {
     center: options.center,
     zoom: options.zoom,
     mapTypeId: options.mapTypeId || google.maps.MapTypeId.ROADMAP,
-    mapId: options.mapId || 'DEMO_MAP_ID',
     styles: options.styles,
     disableDefaultUI: options.disableDefaultUI,
     zoomControl: options.zoomControl,
@@ -44,7 +43,13 @@ export function createMap(
     streetViewControl: options.streetViewControl,
     rotateControl: options.rotateControl,
     fullscreenControl: options.fullscreenControl,
-  });
+  };
+
+  if (options.mapId) {
+    mapOptions.mapId = options.mapId;
+  }
+
+  const map = new google.maps.Map(mapContainer, mapOptions);
 
   // Create the map instance
   const mapInstance: MapInstance = {

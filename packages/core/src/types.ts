@@ -111,3 +111,20 @@ export interface MapInstance {
   directionsRenderer?: google.maps.DirectionsRenderer;
   distanceMatrixService?: google.maps.DistanceMatrixService;
 }
+
+export interface StreetViewOptions {
+  position?: google.maps.LatLngLiteral;
+  pov?: google.maps.StreetViewPov;
+  zoom?: number;
+  visible?: boolean;
+}
+
+export interface StreetViewEventHandlers {
+  onPovChanged?: () => void;
+  onPositionChanged?: () => void;
+  onVisibilityChanged?: () => void;
+}
+
+export interface StreetViewInstance {
+  panorama: google.maps.StreetViewPanorama;
+}

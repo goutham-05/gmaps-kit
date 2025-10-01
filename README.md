@@ -12,7 +12,9 @@ An open-source toolkit around the Google Maps JavaScript SDK that simplifies usa
 - **Geocoding** - Address ↔ coordinates conversion
 - **Directions** - Route planning and navigation
 - **Distance Matrix** - Calculate distances between multiple points
-- **Event handling** - Map and marker event utilities
+- **Street View** - Create and manage Street View panoramas
+- **Web services** - Typed REST clients for Places & Geocoding APIs
+- **Event handling** - Map, marker, and Street View event utilities
 
 ## 📦 Packages
 
@@ -119,6 +121,34 @@ const directions = await getDirectionsAsync({
 const directionsRenderer = renderDirections(mapInstance.map, directions);
 ```
 
+### 7. Street View
+
+```typescript
+import { createStreetViewPanorama } from '@gmaps-kit/core';
+
+const streetView = createStreetViewPanorama('street-view-container', {
+  position: { lat: 40.6892, lng: -74.0445 },
+  pov: { heading: 90, pitch: 0 },
+  zoom: 1,
+});
+
+streetView.panorama.addListener('pov_changed', () => {
+  console.log(streetView.panorama.getPov());
+});
+```
+
+### 8. REST Web Services
+
+```typescript
+import { PlacesClient, GeocodingClient } from '@gmaps-kit/core';
+
+const places = new PlacesClient({ apiKey: 'YOUR_API_KEY' });
+const geocode = new GeocodingClient({ apiKey: 'YOUR_API_KEY' });
+
+const coffeeShops = await places.textSearch({ query: 'coffee in Seattle' });
+const geocodeResult = await geocode.geocode({ address: '221B Baker Street, London' });
+```
+
 ## 📚 API Reference
 
 ### Script Loader
@@ -154,6 +184,16 @@ getMapZoom(map);
 setMapZoom(map, zoom);
 panTo(map, center, zoom?);
 fitMapToMarkers(map, markers, padding?);
+```
+
+### Street View Utilities
+
+```typescript
+const streetView = createStreetViewPanorama(container, options, handlers?);
+setStreetViewPosition(streetView.panorama, position);
+setStreetViewPov(streetView.panorama, pov);
+setStreetViewVisibility(streetView.panorama, visible);
+isStreetViewVisible(streetView.panorama);
 ```
 
 ### Marker Utilities
@@ -212,6 +252,42 @@ const firstResult = await geocodeFirst(address);
 const results = await reverseGeocodeAsync(location);
 const firstResult = await reverseGeocodeFirst(location);
 ```
+
+### Places Web Service Client
+
+```typescript
+const places = new PlacesClient({
+  apiKey: 'YOUR_API_KEY',
+  retryConfig: { retries: 2, delayMs: 500 },
+});
+
+const restaurants = await places.textSearch({
+  query: 'restaurants near Portland',
+  type: 'restaurant',
+});
+
+if (restaurants.next_page_token) {
+  const more = await places.textSearchNextPage(restaurants.next_page_token);
+}
+```
+
+### Geocoding Web Service Client
+
+```typescript
+const geocodeClient = new GeocodingClient({ apiKey: 'YOUR_API_KEY' });
+
+const forward = await geocodeClient.geocode({
+  address: '10 Downing Street, London',
+  components: { country: 'UK' },
+});
+
+const reverse = await geocodeClient.reverseGeocode({
+  latlng: { lat: 51.5034, lng: -0.1276 },
+  resultType: ['street_address'],
+});
+```
+
+> Tip: Use the web service clients when you need typed access to Google Maps REST endpoints (for example SSR, background jobs, or prefetching data). For interactive map experiences, continue to use the on-map utilities that operate directly on the JavaScript SDK.
 
 ### Directions
 

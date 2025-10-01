@@ -14,6 +14,26 @@ export type { MarkerOptions, UseMarkersReturn } from './hooks/useMarkers';
 export { useGeocoding } from './hooks/useGeocoding';
 export type { GeocodingResult, UseGeocodingReturn } from './hooks/useGeocoding';
 
+export { usePlaces } from './hooks/usePlaces';
+export type {
+  UsePlacesOptions,
+  UsePlacesReturn,
+  PlacesHookError,
+} from './hooks/usePlaces';
+
+export { useGeocodingService } from './hooks/useGeocodingService';
+export type {
+  UseGeocodingServiceOptions,
+  UseGeocodingServiceReturn,
+  GeocodingServiceHookError,
+} from './hooks/useGeocodingService';
+
+export { useStreetView } from './hooks/useStreetView';
+export type {
+  UseStreetViewOptions,
+  UseStreetViewReturn,
+} from './hooks/useStreetView';
+
 // Components
 export { Map } from './components/Map';
 export type { MapProps } from './components/Map';

@@ -6,6 +6,9 @@ import {
   useGoogleMaps,
   useMarkers,
   useGeocoding,
+  useGeocodingService,
+  usePlaces,
+  useStreetView,
 } from '@gmaps-kit/react';
 
 export const ReactDemo: React.FC = () => {
@@ -64,6 +67,41 @@ export const ReactDemo: React.FC = () => {
     reverseGeocode,
     isLoading: geocodingLoading,
   } = useGeocoding();
+
+  // NEW: Web service hooks
+  const {
+    geocode: geocodeService,
+    reverseGeocode: reverseGeocodeService,
+    isLoading: geocodingServiceLoading,
+    error: geocodingServiceError,
+  } = useGeocodingService({
+    apiKey: apiKey !== 'YOUR_API_KEY' ? apiKey : '',
+  });
+
+  const {
+    textSearch,
+    nearbySearch,
+    placeDetails,
+    isLoading: placesLoading,
+    error: placesError,
+  } = usePlaces({
+    apiKey: apiKey !== 'YOUR_API_KEY' ? apiKey : '',
+  });
+
+  const {
+    instance: streetViewInstance,
+    isReady: streetViewReady,
+    setPosition: setStreetViewPosition,
+    getPosition: getStreetViewPosition,
+    setPov: setStreetViewPov,
+    getPov: getStreetViewPov,
+    setVisible: setStreetViewVisible,
+    isVisible: isStreetViewVisible,
+  } = useStreetView('react-street-view-container', {
+    position: { lat: 40.758, lng: -73.9855 },
+    pov: { heading: 0, pitch: 0 },
+    zoom: 1,
+  });
 
   // Debug logging
   useEffect(() => {
@@ -780,6 +818,34 @@ export const ReactDemo: React.FC = () => {
                 </div>
               )}
 
+              {/* Street View Demo */}
+              {mapsLoaded && (
+                <div className="mt-6 google-card">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4">
+                    🛣️ Street View Demo
+                  </h4>
+                  <div
+                    id="react-street-view-container"
+                    className="h-64 w-full bg-gray-100 flex items-center justify-center text-gray-500 rounded-lg"
+                  >
+                    {!streetViewReady ? (
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🛣️</div>
+                        <div className="text-sm">Street View loading...</div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">✅</div>
+                        <div className="text-sm">Street View ready!</div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-3">
+                    Street View panorama managed by useStreetView hook
+                  </p>
+                </div>
+              )}
+
               {/* InfoWindow Demo */}
               {mapsLoaded && selectedMarker && (
                 <div className="mt-6 google-card">
@@ -1234,6 +1300,208 @@ export const ReactDemo: React.FC = () => {
                     </button>
                   </div>
 
+                  {/* Geocoding Service Hook Demo */}
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <h5 className="font-medium text-gray-700 mb-2">
+                      🌐 useGeocodingService
+                    </h5>
+                    <div className="bg-gray-50 p-3 rounded-lg font-mono text-sm mb-2">
+                      <div className="text-gray-500 mb-1">
+                        // Import and usage
+                      </div>
+                      <div className="text-pink-600">
+                        import {`{`} useGeocodingService {`}`} from
+                        '@gmaps-kit/react';
+                      </div>
+                      <div className="text-blue-600">
+                        const {`{`} geocode, reverseGeocode, isLoading {`}`} =
+                        useGeocodingService({`{`} apiKey: 'YOUR_KEY' {`}`});
+                      </div>
+                      <div className="text-green-600">
+                        // REST API geocoding
+                      </div>
+                      <div className="text-blue-600">
+                        const result = await geocode({`{`}
+                      </div>
+                      <div className="text-blue-600 ml-4">
+                        address: '1600 Amphitheatre Pkwy',
+                      </div>
+                      <div className="text-blue-600 ml-4">language: 'en'</div>
+                      <div className="text-blue-600">{`}`});</div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!mapsLoaded) {
+                          setStatus(
+                            '⚠️ Please enter your Google Maps API key first'
+                          );
+                          return;
+                        }
+                        try {
+                          setStatus('🌐 Geocoding via REST API...');
+                          const response = await geocodeService({
+                            address: searchAddress,
+                            language: 'en',
+                            region: 'us',
+                          });
+
+                          if (response.results.length > 0) {
+                            const result = response.results[0];
+                            setStatus(
+                              `🌐 REST Geocoding: ${result.formatted_address}`
+                            );
+                          } else {
+                            setStatus('❌ No results found via REST API');
+                          }
+                        } catch (error) {
+                          setStatus(
+                            `❌ REST Geocoding failed: ${error.message}`
+                          );
+                        }
+                      }}
+                      disabled={!mapsLoaded || geocodingServiceLoading}
+                      className={`w-full py-2 px-3 rounded-md text-sm transition-colors ${
+                        !mapsLoaded
+                          ? 'bg-gray-100 border-2 border-dashed border-gray-300 text-gray-600 cursor-not-allowed'
+                          : geocodingServiceLoading
+                            ? 'bg-gray-200 border-2 border-dashed border-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                      }`}
+                    >
+                      {geocodingServiceLoading
+                        ? 'Geocoding...'
+                        : '🌐 Try Geocoding Service Hook'}
+                    </button>
+                  </div>
+
+                  {/* Places Hook Demo */}
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <h5 className="font-medium text-gray-700 mb-2">
+                      🏪 usePlaces
+                    </h5>
+                    <div className="bg-gray-50 p-3 rounded-lg font-mono text-sm mb-2">
+                      <div className="text-gray-500 mb-1">
+                        // Import and usage
+                      </div>
+                      <div className="text-pink-600">
+                        import {`{`} usePlaces {`}`} from '@gmaps-kit/react';
+                      </div>
+                      <div className="text-blue-600">
+                        const {`{`} textSearch, nearbySearch, placeDetails {`}`}{' '}
+                        = usePlaces({`{`} apiKey: 'YOUR_KEY' {`}`});
+                      </div>
+                      <div className="text-green-600">// Search for places</div>
+                      <div className="text-blue-600">
+                        const places = await textSearch({`{`}
+                      </div>
+                      <div className="text-blue-600 ml-4">
+                        query: 'restaurants in NYC',
+                      </div>
+                      <div className="text-blue-600 ml-4">language: 'en'</div>
+                      <div className="text-blue-600">{`}`});</div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!mapsLoaded) {
+                          setStatus(
+                            '⚠️ Please enter your Google Maps API key first'
+                          );
+                          return;
+                        }
+                        try {
+                          setStatus('🏪 Searching places via REST API...');
+                          const response = await textSearch({
+                            query: 'restaurants in New York',
+                            language: 'en',
+                            region: 'us',
+                          });
+
+                          if (response.results.length > 0) {
+                            const result = response.results[0];
+                            setStatus(
+                              `🏪 Found: ${result.name || 'Place'} - ${result.formatted_address}`
+                            );
+                          } else {
+                            setStatus('❌ No places found via REST API');
+                          }
+                        } catch (error) {
+                          setStatus(
+                            `❌ Places search failed: ${error.message}`
+                          );
+                        }
+                      }}
+                      disabled={!mapsLoaded || placesLoading}
+                      className={`w-full py-2 px-3 rounded-md text-sm transition-colors ${
+                        !mapsLoaded
+                          ? 'bg-gray-100 border-2 border-dashed border-gray-300 text-gray-600 cursor-not-allowed'
+                          : placesLoading
+                            ? 'bg-gray-200 border-2 border-dashed border-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
+                      }`}
+                    >
+                      {placesLoading ? 'Searching...' : '🏪 Try Places Hook'}
+                    </button>
+                  </div>
+
+                  {/* Street View Hook Demo */}
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <h5 className="font-medium text-gray-700 mb-2">
+                      🛣️ useStreetView
+                    </h5>
+                    <div className="bg-gray-50 p-3 rounded-lg font-mono text-sm mb-2">
+                      <div className="text-gray-500 mb-1">
+                        // Import and usage
+                      </div>
+                      <div className="text-pink-600">
+                        import {`{`} useStreetView {`}`} from
+                        '@gmaps-kit/react';
+                      </div>
+                      <div className="text-blue-600">
+                        const {`{`} instance, setPosition, setPov {`}`} =
+                        useStreetView('container-id', {`{`}
+                      </div>
+                      <div className="text-blue-600 ml-4">
+                        position: {`{`} lat: 40.7580, lng: -73.9855 {`}`},
+                      </div>
+                      <div className="text-blue-600 ml-4">
+                        pov: {`{`} heading: 0, pitch: 0 {`}`}
+                      </div>
+                      <div className="text-blue-600">{`}`});</div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!mapsLoaded) {
+                          setStatus(
+                            '⚠️ Please enter your Google Maps API key first'
+                          );
+                          return;
+                        }
+                        try {
+                          setStatus('🛣️ Street View status check...');
+                          const position = getStreetViewPosition();
+                          const pov = getStreetViewPov();
+                          const visible = isStreetViewVisible();
+
+                          setStatus(
+                            `🛣️ Street View - Ready: ${streetViewReady}, Position: ${position ? `${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}` : 'N/A'}, POV: ${pov ? `heading ${pov.heading}°, pitch ${pov.pitch}°` : 'N/A'}, Visible: ${visible}`
+                          );
+                        } catch (error) {
+                          setStatus(
+                            `❌ Street View check failed: ${error.message}`
+                          );
+                        }
+                      }}
+                      disabled={!mapsLoaded}
+                      className={`w-full py-2 px-3 rounded-md text-sm transition-colors ${
+                        !mapsLoaded
+                          ? 'bg-gray-100 border-2 border-dashed border-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-purple-500 text-white hover:bg-purple-600 cursor-pointer'
+                      }`}
+                    >
+                      🛣️ Try Street View Hook
+                    </button>
+                  </div>
+
                   <div className="text-xs text-gray-500 mt-2 p-2 bg-blue-50 rounded">
                     💡 <strong>Pro Tip:</strong> These hooks provide advanced
                     Google Maps functionality. Each example shows the exact
@@ -1373,6 +1641,20 @@ export const ReactDemo: React.FC = () => {
                         <strong>useBicycling:</strong> Bicycling layer, returns{' '}
                         {`{createBicyclingLayer, showBicycling, hideBicycling}`}
                       </div>
+                      <div className="bg-gray-50 p-2 rounded">
+                        <strong>useGeocodingService:</strong> REST geocoding
+                        service, returns{' '}
+                        {`{geocode, reverseGeocode, isLoading, error}`}
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded">
+                        <strong>usePlaces:</strong> Places REST API, returns{' '}
+                        {`{textSearch, nearbySearch, placeDetails, isLoading, error}`}
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded">
+                        <strong>useStreetView:</strong> Street View service,
+                        returns{' '}
+                        {`{instance, isReady, setPosition, getPosition, setPov, getPov, setVisible, isVisible}`}
+                      </div>
                     </div>
                   </div>
 
@@ -1475,7 +1757,7 @@ export const ReactDemo: React.FC = () => {
                       <div>• Automatic cleanup and optimization</div>
                       <div>• Event handling built-in</div>
                       <div>• Performance optimized</div>
-                      <div>• 18+ specialized hooks for all use cases</div>
+                      <div>• 20+ specialized hooks for all use cases</div>
                       <div>• Complete Google Maps API coverage</div>
                       <div>
                         • Services: Elevation, Street View, Max Zoom, Geometry
@@ -1484,6 +1766,11 @@ export const ReactDemo: React.FC = () => {
                       <div>
                         • Advanced: Directions, Places, Distance Matrix,
                         Clustering
+                      </div>
+                      <div>• REST APIs: GeocodingService, Places REST API</div>
+                      <div>
+                        • Web Services: Full REST client support with retry
+                        logic
                       </div>
                     </div>
                   </div>
