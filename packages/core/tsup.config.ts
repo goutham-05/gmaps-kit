@@ -6,8 +6,10 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
-  treeshake: true,
-  minify: false,
+  splitting: true,
+  treeshake: {
+    moduleSideEffects: false,
+  },
+  minify: true,
   external: [],
 });

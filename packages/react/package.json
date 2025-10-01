@@ -69,5 +69,10 @@
     "react-dom": "^18.2.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goutham-05/gmaps-kit.git",
+    "directory": "packages/react"
   }
 }
