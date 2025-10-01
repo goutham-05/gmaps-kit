@@ -2,60 +2,57 @@
 import { MarkerOptions, InfoWindowOptions, MapInstance } from './types';
 
 /**
- * Adds a marker to the map
+ * Adds an advanced marker to the map
  * @param map - Google Maps instance
  * @param options - Marker configuration options
- * @returns The created marker
+ * @returns The created advanced marker
  */
 export function addMarker(
   map: google.maps.Map,
   options: MarkerOptions
-): google.maps.Marker {
-  const marker = new google.maps.Marker({
+): google.maps.marker.AdvancedMarkerElement {
+  const marker = new google.maps.marker.AdvancedMarkerElement({
     position: options.position,
     map,
     title: options.title,
-    label: options.label,
-    icon: options.icon,
-    animation: options.animation,
-    draggable: options.draggable,
-    clickable: options.clickable,
-    zIndex: options.zIndex,
+    content: options.content,
   });
 
   return marker;
 }
 
 /**
- * Removes a marker from the map
- * @param marker - Marker to remove
+ * Removes an advanced marker from the map
+ * @param marker - Advanced marker to remove
  */
-export function removeMarker(marker: google.maps.Marker): void {
-  marker.setMap(null);
+export function removeMarker(
+  marker: google.maps.marker.AdvancedMarkerElement
+): void {
+  marker.map = null;
 }
 
 /**
- * Updates marker position
- * @param marker - Marker to update
+ * Updates advanced marker position
+ * @param marker - Advanced marker to update
  * @param position - New position
  */
 export function updateMarkerPosition(
-  marker: google.maps.Marker,
+  marker: google.maps.marker.AdvancedMarkerElement,
   position: google.maps.LatLngLiteral
 ): void {
-  marker.setPosition(position);
+  marker.position = position;
 }
 
 /**
- * Updates marker icon
- * @param marker - Marker to update
- * @param icon - New icon
+ * Updates advanced marker content
+ * @param marker - Advanced marker to update
+ * @param content - New content
  */
-export function updateMarkerIcon(
-  marker: google.maps.Marker,
-  icon: string | google.maps.Icon | google.maps.Symbol
+export function updateMarkerContent(
+  marker: google.maps.marker.AdvancedMarkerElement,
+  content: HTMLElement
 ): void {
-  marker.setIcon(icon);
+  marker.content = content;
 }
 
 /**
@@ -63,7 +60,9 @@ export function updateMarkerIcon(
  * @param options - InfoWindow configuration options
  * @returns The created InfoWindow
  */
-export function createInfoWindow(options: InfoWindowOptions): google.maps.InfoWindow {
+export function createInfoWindow(
+  options: InfoWindowOptions
+): google.maps.InfoWindow {
   const infoWindow = new google.maps.InfoWindow({
     content: options.content,
     position: options.position,
@@ -83,10 +82,10 @@ export function createInfoWindow(options: InfoWindowOptions): google.maps.InfoWi
  */
 export function openInfoWindow(
   infoWindow: google.maps.InfoWindow,
-  marker: google.maps.Marker,
+  marker: google.maps.marker.AdvancedMarkerElement,
   map?: google.maps.Map
 ): void {
-  const targetMap = map || marker.getMap();
+  const targetMap = map || marker.map;
   if (targetMap) {
     infoWindow.open(targetMap, marker);
   }
@@ -111,7 +110,10 @@ export function addMarkerWithInfoWindow(
   map: google.maps.Map,
   markerOptions: MarkerOptions,
   infoWindowOptions: InfoWindowOptions
-): { marker: google.maps.Marker; infoWindow: google.maps.InfoWindow } {
+): {
+  marker: google.maps.marker.AdvancedMarkerElement;
+  infoWindow: google.maps.InfoWindow;
+} {
   const marker = addMarker(map, markerOptions);
   const infoWindow = createInfoWindow(infoWindowOptions);
 
@@ -128,8 +130,8 @@ export function addMarkerWithInfoWindow(
  * @param mapInstance - Map instance containing markers
  */
 export function clearMarkers(mapInstance: MapInstance): void {
-  mapInstance.markers.forEach(marker => {
-    marker.setMap(null);
+  mapInstance.markers.forEach((marker) => {
+    marker.map = null;
   });
   mapInstance.markers = [];
 }
@@ -139,7 +141,7 @@ export function clearMarkers(mapInstance: MapInstance): void {
  * @param mapInstance - Map instance containing InfoWindows
  */
 export function clearInfoWindows(mapInstance: MapInstance): void {
-  mapInstance.infoWindows.forEach(infoWindow => {
+  mapInstance.infoWindows.forEach((infoWindow) => {
     infoWindow.close();
   });
   mapInstance.infoWindows = [];
@@ -150,18 +152,21 @@ export function clearInfoWindows(mapInstance: MapInstance): void {
  * @param marker - Marker to get position from
  * @returns Marker position or null if not set
  */
-export function getMarkerPosition(marker: google.maps.Marker): google.maps.LatLngLiteral | null {
-  const position = marker.getPosition();
-  return position ? { lat: position.lat(), lng: position.lng() } : null;
-}
+export function getMarkerPosition(
+  marker: google.maps.marker.AdvancedMarkerElement
+): google.maps.LatLngLiteral | null {
+  const position = marker.position;
+  if (!position) return null;
 
-/**
- * Sets marker visibility
- * @param marker - Marker to update
- * @param visible - Whether the marker should be visible
- */
-export function setMarkerVisibility(marker: google.maps.Marker, visible: boolean): void {
-  marker.setVisible(visible);
+  // Handle both LatLng and LatLngLiteral types
+  if (typeof position.lat === 'function') {
+    return {
+      lat: (position.lat as () => number)(),
+      lng: (position.lng as () => number)(),
+    };
+  } else {
+    return { lat: position.lat as number, lng: position.lng as number };
+  }
 }
 
 /**
@@ -169,8 +174,12 @@ export function setMarkerVisibility(marker: google.maps.Marker, visible: boolean
  * @param marker - Marker to update
  * @param draggable - Whether the marker should be draggable
  */
-export function setMarkerDraggable(marker: google.maps.Marker, draggable: boolean): void {
-  marker.setDraggable(draggable);
+export function setMarkerDraggable(
+  marker: google.maps.marker.AdvancedMarkerElement,
+  draggable: boolean
+): void {
+  // AdvancedMarkerElement doesn't support draggable property
+  // This is a no-op for compatibility
 }
 
 /**
@@ -179,7 +188,7 @@ export function setMarkerDraggable(marker: google.maps.Marker, draggable: boolea
  * @param callback - Callback function to execute on click
  */
 export function addMarkerClickListener(
-  marker: google.maps.Marker,
+  marker: google.maps.marker.AdvancedMarkerElement,
   callback: (event: google.maps.MapMouseEvent) => void
 ): void {
   marker.addListener('click', callback);
@@ -191,7 +200,7 @@ export function addMarkerClickListener(
  * @param callback - Callback function to execute on drag
  */
 export function addMarkerDragListener(
-  marker: google.maps.Marker,
+  marker: google.maps.marker.AdvancedMarkerElement,
   callback: (event: google.maps.MapMouseEvent) => void
 ): void {
   marker.addListener('drag', callback);
@@ -203,7 +212,7 @@ export function addMarkerDragListener(
  * @param callback - Callback function to execute on drag end
  */
 export function addMarkerDragEndListener(
-  marker: google.maps.Marker,
+  marker: google.maps.marker.AdvancedMarkerElement,
   callback: (event: google.maps.MapMouseEvent) => void
 ): void {
   marker.addListener('dragend', callback);

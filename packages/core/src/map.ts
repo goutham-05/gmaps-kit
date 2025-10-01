@@ -15,13 +15,16 @@ export function createMap(
 ): MapInstance {
   // Ensure Google Maps is loaded
   if (!window.google || !window.google.maps) {
-    throw new Error('Google Maps API is not loaded. Call loadGoogleMaps() first.');
+    throw new Error(
+      'Google Maps API is not loaded. Call loadGoogleMaps() first.'
+    );
   }
 
   // Get the container element
-  const mapContainer = typeof container === 'string' 
-    ? document.getElementById(container) 
-    : container;
+  const mapContainer =
+    typeof container === 'string'
+      ? document.getElementById(container)
+      : container;
 
   if (!mapContainer) {
     throw new Error('Map container element not found');
@@ -32,6 +35,7 @@ export function createMap(
     center: options.center,
     zoom: options.zoom,
     mapTypeId: options.mapTypeId || google.maps.MapTypeId.ROADMAP,
+    mapId: options.mapId || 'DEMO_MAP_ID',
     styles: options.styles,
     disableDefaultUI: options.disableDefaultUI,
     zoomControl: options.zoomControl,
@@ -146,7 +150,7 @@ export function fitMapToMarkers(
   if (markers.length === 0) return;
 
   const bounds = new google.maps.LatLngBounds();
-  markers.forEach(marker => {
+  markers.forEach((marker) => {
     const position = marker.getPosition();
     if (position) {
       bounds.extend(position);

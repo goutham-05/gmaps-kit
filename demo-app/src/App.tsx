@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { PackageSelector, PackageType } from './components/PackageSelector';
+import { ReactDemo } from './components/ReactDemo';
 import {
   // Script loader
   loadGoogleMaps,
@@ -16,7 +18,7 @@ import {
   addMarker,
   removeMarker,
   updateMarkerPosition,
-  updateMarkerIcon,
+  updateMarkerContent,
   createInfoWindow,
   openInfoWindow,
   closeInfoWindow,
@@ -24,7 +26,6 @@ import {
   clearMarkers,
   clearInfoWindows,
   getMarkerPosition,
-  setMarkerVisibility,
   setMarkerDraggable,
   addMarkerClickListener,
   addMarkerDragListener,
@@ -70,7 +71,378 @@ import {
   fitMapToRoute,
 } from '@gmaps-kit/core';
 
+// Helper functions for function documentation
+const getFunctionExample = (functionName: string): string => {
+  const examples: { [key: string]: string } = {
+    addMarker:
+      'const marker = addMarker(map, { position: { lat: 40.7128, lng: -74.006 }, title: "New York" });',
+    getMapCenter: 'const center = getMapCenter(map);',
+    setMapCenter: 'setMapCenter(map, { lat: 40.7128, lng: -74.006 });',
+    getMapZoom: 'const zoom = getMapZoom(map);',
+    setMapZoom: 'setMapZoom(map, 15);',
+    panTo: 'panTo(map, { lat: 40.7128, lng: -74.006 }, 14);',
+    fitMapToMarkers: 'fitMapToMarkers(map, markers);',
+    removeMarker: 'removeMarker(marker);',
+    updateMarkerPosition:
+      'updateMarkerPosition(marker, { lat: 40.7128, lng: -74.006 });',
+    updateMarkerContent: 'updateMarkerContent(marker, newContent);',
+    createInfoWindow:
+      'const infoWindow = createInfoWindow({ content: "<h3>Hello</h3>" });',
+    openInfoWindow: 'openInfoWindow(infoWindow, marker, map);',
+    closeInfoWindow: 'closeInfoWindow(infoWindow);',
+    addMarkerWithInfoWindow:
+      'const result = addMarkerWithInfoWindow(map, markerOptions, infoWindowOptions);',
+    getMarkerPosition: 'const position = getMarkerPosition(marker);',
+    setMarkerDraggable: 'setMarkerDraggable(marker, true);',
+    addMarkerClickListener:
+      'addMarkerClickListener(marker, () => console.log("Clicked!"));',
+    clearMarkers: 'clearMarkers(mapInstance);',
+    clearInfoWindows: 'clearInfoWindows(mapInstance);',
+    geocodeAsync: 'const results = await geocodeAsync("New York, NY");',
+    reverseGeocodeAsync:
+      'const results = await reverseGeocodeAsync({ lat: 40.7128, lng: -74.006 });',
+    geocodeFirst: 'const result = await geocodeFirst("New York, NY");',
+    reverseGeocodeFirst:
+      'const result = await reverseGeocodeFirst({ lat: 40.7128, lng: -74.006 });',
+    getDirectionsAsync:
+      'const directions = await getDirectionsAsync({ origin: "NYC", destination: "LA" });',
+    getDistanceMatrixAsync:
+      'const matrix = await getDistanceMatrixAsync({ origins: ["NYC"], destinations: ["LA"] });',
+    createAutocomplete:
+      'const autocomplete = createAutocomplete({ input: inputElement });',
+    getSelectedPlace: 'const place = getSelectedPlace(autocomplete);',
+    setAutocompleteTypes:
+      'setAutocompleteTypes(autocomplete, ["restaurant", "lodging"]);',
+    getAutocompleteTypes: 'const types = getAutocompleteTypes(autocomplete);',
+    setAutocompleteBounds: 'setAutocompleteBounds(autocomplete, bounds);',
+    getAutocompleteBounds:
+      'const bounds = getAutocompleteBounds(autocomplete);',
+    setAutocompleteComponentRestrictions:
+      'setAutocompleteComponentRestrictions(autocomplete, { country: "us" });',
+    getAutocompleteComponentRestrictions:
+      'const restrictions = getAutocompleteComponentRestrictions(autocomplete);',
+    clearAutocomplete: 'clearAutocomplete(autocomplete);',
+    focusAutocomplete: 'focusAutocomplete(autocomplete);',
+    addPlaceChangedListener:
+      'addPlaceChangedListener(autocomplete, (place) => console.log(place));',
+    createSearchBox: 'const searchBox = createSearchBox(input, map);',
+    addPlacesChangedListener:
+      'addPlacesChangedListener(searchBox, (places) => console.log(places));',
+    getTotalDistance: 'const distance = getTotalDistance(directions);',
+    getTotalDuration: 'const duration = getTotalDuration(directions);',
+    fitMapToRoute: 'fitMapToRoute(map, directions);',
+    clearDirections: 'clearDirections(renderer);',
+    createDirectionsService:
+      'const service = createDirectionsService(mapInstance);',
+    createDirectionsRenderer:
+      'const renderer = createDirectionsRenderer(mapInstance);',
+    createDistanceMatrixService:
+      'const service = createDistanceMatrixService(mapInstance);',
+    getDirectionsBounds: 'const bounds = getDirectionsBounds(directions);',
+    addMarkerDragListener:
+      'addMarkerDragListener(marker, () => console.log("Dragging"));',
+    addMarkerDragEndListener:
+      'addMarkerDragEndListener(marker, () => console.log("Drag ended"));',
+    isGoogleMapsLoaded: 'const loaded = isGoogleMapsLoaded();',
+    waitForGoogleMaps: 'await waitForGoogleMaps();',
+    loadGoogleMaps:
+      'await loadGoogleMaps({ apiKey: "your-key", libraries: ["places"] });',
+    geocode: 'geocode("New York, NY", (results) => console.log(results));',
+    reverseGeocode:
+      'reverseGeocode({ lat: 40.7128, lng: -74.006 }, (results) => console.log(results));',
+    getDirections:
+      'getDirections({ origin: "NYC", destination: "LA" }, (result) => console.log(result));',
+    getDistanceMatrix:
+      'getDistanceMatrix({ origins: ["NYC"], destinations: ["LA"] }, (result) => console.log(result));',
+    renderDirections: 'renderDirections(map, directions);',
+    geocodeWithComponents:
+      'await geocodeWithComponents("NYC", { country: "US" }, callback);',
+    geocodeWithBounds: 'await geocodeWithBounds("NYC", bounds, callback);',
+    geocodeWithRegion: 'await geocodeWithRegion("NYC", "US", callback);',
+  };
+  return examples[functionName] || '// Function usage example';
+};
+
+const getFunctionParameters = (functionName: string): string => {
+  const parameters: { [key: string]: string } = {
+    addMarker:
+      '• map: Google Maps instance\n• options: { position: LatLngLiteral, title?: string, draggable?: boolean }',
+    getMapCenter: '• map: Google Maps instance',
+    setMapCenter: '• map: Google Maps instance\n• center: LatLngLiteral',
+    getMapZoom: '• map: Google Maps instance',
+    setMapZoom: '• map: Google Maps instance\n• zoom: number (1-20)',
+    panTo:
+      '• map: Google Maps instance\n• center: LatLngLiteral\n• zoom?: number',
+    fitMapToMarkers: '• map: Google Maps instance\n• markers: Marker[]',
+    removeMarker: '• marker: Marker instance',
+    updateMarkerPosition:
+      '• marker: Marker instance\n• position: LatLngLiteral',
+    updateMarkerContent:
+      '• marker: Marker instance\n• content: HTMLElement | string',
+    createInfoWindow:
+      '• options: { content: string | HTMLElement, position?: LatLngLiteral }',
+    openInfoWindow:
+      '• infoWindow: InfoWindow instance\n• marker: Marker instance\n• map: Google Maps instance',
+    closeInfoWindow: '• infoWindow: InfoWindow instance',
+    addMarkerWithInfoWindow:
+      '• map: Google Maps instance\n• markerOptions: MarkerOptions\n• infoWindowOptions: InfoWindowOptions',
+    getMarkerPosition: '• marker: Marker instance',
+    setMarkerDraggable: '• marker: Marker instance\n• draggable: boolean',
+    addMarkerClickListener: '• marker: Marker instance\n• callback: () => void',
+    clearMarkers: '• mapInstance: MapInstance',
+    clearInfoWindows: '• mapInstance: MapInstance',
+    geocodeAsync: '• address: string',
+    reverseGeocodeAsync: '• location: LatLngLiteral',
+    geocodeFirst: '• address: string',
+    reverseGeocodeFirst: '• location: LatLngLiteral',
+    getDirectionsAsync: '• request: DirectionsRequest',
+    getDistanceMatrixAsync: '• request: DistanceMatrixRequest',
+    createAutocomplete:
+      '• options: { input: HTMLInputElement, types?: string[], bounds?: LatLngBounds }',
+    getSelectedPlace: '• autocomplete: Autocomplete instance',
+    setAutocompleteTypes:
+      '• autocomplete: Autocomplete instance\n• types: string[]',
+    getAutocompleteTypes: '• autocomplete: Autocomplete instance',
+    setAutocompleteBounds:
+      '• autocomplete: Autocomplete instance\n• bounds: LatLngBounds',
+    getAutocompleteBounds: '• autocomplete: Autocomplete instance',
+    setAutocompleteComponentRestrictions:
+      '• autocomplete: Autocomplete instance\n• restrictions: ComponentRestrictions',
+    getAutocompleteComponentRestrictions:
+      '• autocomplete: Autocomplete instance',
+    clearAutocomplete: '• autocomplete: Autocomplete instance',
+    focusAutocomplete: '• autocomplete: Autocomplete instance',
+    addPlaceChangedListener:
+      '• autocomplete: Autocomplete instance\n• callback: (place: Place) => void',
+    createSearchBox: '• input: HTMLInputElement\n• map: Google Maps instance',
+    addPlacesChangedListener:
+      '• searchBox: SearchBox instance\n• callback: (places: Place[]) => void',
+    getTotalDistance: '• directions: DirectionsResult',
+    getTotalDuration: '• directions: DirectionsResult',
+    fitMapToRoute:
+      '• map: Google Maps instance\n• directions: DirectionsResult',
+    clearDirections: '• renderer: DirectionsRenderer',
+    createDirectionsService: '• mapInstance: MapInstance',
+    createDirectionsRenderer: '• mapInstance: MapInstance',
+    createDistanceMatrixService: '• mapInstance: MapInstance',
+    getDirectionsBounds: '• directions: DirectionsResult',
+    addMarkerDragListener: '• marker: Marker instance\n• callback: () => void',
+    addMarkerDragEndListener:
+      '• marker: Marker instance\n• callback: () => void',
+    isGoogleMapsLoaded: 'No parameters',
+    waitForGoogleMaps: 'No parameters',
+    loadGoogleMaps: '• options: { apiKey: string, libraries?: string[] }',
+    geocode:
+      '• address: string\n• callback: (results: GeocoderResult[]) => void',
+    reverseGeocode:
+      '• location: LatLngLiteral\n• callback: (results: GeocoderResult[]) => void',
+    getDirections:
+      '• request: DirectionsRequest\n• callback: (result: DirectionsResult) => void',
+    getDistanceMatrix:
+      '• request: DistanceMatrixRequest\n• callback: (result: DistanceMatrixResponse) => void',
+    renderDirections:
+      '• map: Google Maps instance\n• directions: DirectionsResult',
+    geocodeWithComponents:
+      '• address: string\n• components: ComponentRestrictions\n• callback: (results: GeocoderResult[]) => void',
+    geocodeWithBounds:
+      '• address: string\n• bounds: LatLngBounds\n• callback: (results: GeocoderResult[]) => void',
+    geocodeWithRegion:
+      '• address: string\n• region: string\n• callback: (results: GeocoderResult[]) => void',
+  };
+  return parameters[functionName] || 'No parameters documented';
+};
+
+const getFunctionReturns = (functionName: string): string => {
+  const returns: { [key: string]: string } = {
+    addMarker: 'Marker instance',
+    getMapCenter: 'LatLngLiteral object with lat and lng properties',
+    setMapCenter: 'void',
+    getMapZoom: 'number (zoom level)',
+    setMapZoom: 'void',
+    panTo: 'void',
+    fitMapToMarkers: 'void',
+    removeMarker: 'void',
+    updateMarkerPosition: 'void',
+    updateMarkerContent: 'void',
+    createInfoWindow: 'InfoWindow instance',
+    openInfoWindow: 'void',
+    closeInfoWindow: 'void',
+    addMarkerWithInfoWindow: '{ marker: Marker, infoWindow: InfoWindow }',
+    getMarkerPosition: 'LatLngLiteral | null',
+    setMarkerDraggable: 'void',
+    addMarkerClickListener: 'void',
+    clearMarkers: 'void',
+    clearInfoWindows: 'void',
+    geocodeAsync: 'Promise<GeocoderResult[]>',
+    reverseGeocodeAsync: 'Promise<GeocoderResult[]>',
+    geocodeFirst: 'Promise<GeocoderResult>',
+    reverseGeocodeFirst: 'Promise<GeocoderResult>',
+    getDirectionsAsync: 'Promise<DirectionsResult>',
+    getDistanceMatrixAsync: 'Promise<DistanceMatrixElement[]>',
+    createAutocomplete: 'Autocomplete instance',
+    getSelectedPlace: 'Place | null',
+    setAutocompleteTypes: 'void',
+    getAutocompleteTypes: 'string[]',
+    setAutocompleteBounds: 'void',
+    getAutocompleteBounds: 'LatLngBounds | null',
+    setAutocompleteComponentRestrictions: 'void',
+    getAutocompleteComponentRestrictions: 'ComponentRestrictions | null',
+    clearAutocomplete: 'void',
+    focusAutocomplete: 'void',
+    addPlaceChangedListener: 'void',
+    createSearchBox: 'SearchBox instance',
+    addPlacesChangedListener: 'void',
+    getTotalDistance: 'number (in meters)',
+    getTotalDuration: 'number (in seconds)',
+    fitMapToRoute: 'void',
+    clearDirections: 'void',
+    createDirectionsService: 'DirectionsService instance',
+    createDirectionsRenderer: 'DirectionsRenderer instance',
+    createDistanceMatrixService: 'DistanceMatrixService instance',
+    getDirectionsBounds: 'LatLngBounds | null',
+    addMarkerDragListener: 'void',
+    addMarkerDragEndListener: 'void',
+    isGoogleMapsLoaded: 'boolean',
+    waitForGoogleMaps: 'Promise<void>',
+    loadGoogleMaps: 'Promise<void>',
+    geocode: 'void (uses callback)',
+    reverseGeocode: 'void (uses callback)',
+    getDirections: 'void (uses callback)',
+    getDistanceMatrix: 'void (uses callback)',
+    renderDirections: 'void',
+    geocodeWithComponents: 'Promise<GeocoderResult[]>',
+    geocodeWithBounds: 'Promise<GeocoderResult[]>',
+    geocodeWithRegion: 'Promise<GeocoderResult[]>',
+  };
+  return returns[functionName] || 'No return value documented';
+};
+
+const getFunctionTips = (functionName: string): string => {
+  const tips: { [key: string]: string } = {
+    addMarker:
+      '• Use draggable: true to allow users to move markers\n• Set custom icons with the icon property\n• Add click listeners for interactive markers',
+    getMapCenter:
+      '• Returns the current center of the map view\n• Useful for getting user location after panning',
+    setMapCenter:
+      '• Smoothly animates to the new center\n• Combine with setMapZoom for precise positioning',
+    getMapZoom:
+      '• Zoom levels range from 1 (world view) to 20 (building level)\n• Higher numbers show more detail',
+    setMapZoom:
+      '• Use values between 1-20 for best results\n• Lower values show larger areas',
+    panTo:
+      '• Smoothly pans to the new location\n• Optionally sets zoom level during pan',
+    fitMapToMarkers:
+      '• Automatically adjusts zoom and center to show all markers\n• Great for displaying multiple locations',
+    removeMarker:
+      '• Removes marker from map and memory\n• Call setMap(null) to completely remove',
+    updateMarkerPosition:
+      '• Updates marker location without recreating\n• Useful for real-time position updates',
+    updateMarkerContent:
+      '• Can accept HTML strings or DOM elements\n• Use for custom marker appearances',
+    createInfoWindow:
+      '• Create reusable InfoWindow instances\n• Set content as HTML string or DOM element',
+    openInfoWindow:
+      '• Opens InfoWindow at marker location\n• Only one InfoWindow can be open at a time',
+    closeInfoWindow:
+      '• Closes the specified InfoWindow\n• Use to programmatically close windows',
+    addMarkerWithInfoWindow:
+      '• Convenience function for marker + InfoWindow\n• Returns both instances for further manipulation',
+    getMarkerPosition:
+      '• Returns current marker position\n• Useful for saving marker locations',
+    setMarkerDraggable:
+      '• Enable/disable marker dragging\n• Add drag listeners for real-time updates',
+    addMarkerClickListener:
+      '• Add click event handlers to markers\n• Use for interactive marker features',
+    clearMarkers:
+      '• Removes all markers from the map\n• Useful for resetting marker collections',
+    clearInfoWindows:
+      '• Closes and removes all InfoWindows\n• Clean up before adding new content',
+    geocodeAsync:
+      '• Convert addresses to coordinates\n• Returns array of possible matches\n• Use first result for best match',
+    reverseGeocodeAsync:
+      '• Convert coordinates to addresses\n• Returns human-readable location names\n• Useful for displaying current location',
+    geocodeFirst:
+      '• Gets the first (best) geocoding result\n• Convenience function for single results',
+    reverseGeocodeFirst:
+      '• Gets the first reverse geocoding result\n• Quick way to get address from coordinates',
+    getDirectionsAsync:
+      '• Get driving/walking/transit directions\n• Returns detailed route information\n• Use with DirectionsRenderer to display',
+    getDistanceMatrixAsync:
+      '• Calculate distances between multiple points\n• Useful for delivery optimization\n• Returns travel times and distances',
+    createAutocomplete:
+      '• Create address autocomplete inputs\n• Set types to filter results (restaurant, lodging, etc.)\n• Use bounds to limit search area',
+    getSelectedPlace:
+      '• Get the currently selected place\n• Returns null if no place selected\n• Use after place_changed event',
+    setAutocompleteTypes:
+      '• Filter autocomplete results by type\n• Common types: establishment, geocode, (regions)\n• Use array for multiple types',
+    getAutocompleteTypes:
+      '• Get current type restrictions\n• Returns array of active types\n• Useful for debugging',
+    setAutocompleteBounds:
+      '• Limit search to specific geographic area\n• Improves result relevance\n• Use map bounds for dynamic limits',
+    getAutocompleteBounds:
+      '• Get current geographic bounds\n• Returns null if no bounds set\n• Useful for debugging',
+    setAutocompleteComponentRestrictions:
+      '• Restrict results by country/region\n• Use country codes (us, ca, gb, etc.)\n• Improves result accuracy',
+    getAutocompleteComponentRestrictions:
+      '• Get current component restrictions\n• Returns null if no restrictions\n• Useful for debugging',
+    clearAutocomplete:
+      '• Clear autocomplete input and results\n• Reset to initial state\n• Useful for form resets',
+    focusAutocomplete:
+      '• Programmatically focus the input\n• Trigger autocomplete dropdown\n• Useful for mobile interactions',
+    addPlaceChangedListener:
+      '• Listen for place selection events\n• Use to handle user selections\n• Access place details in callback',
+    createSearchBox:
+      '• Create search box for places\n• Different from autocomplete\n• Use for broader place searches',
+    addPlacesChangedListener:
+      '• Listen for search box changes\n• Handle multiple place results\n• Use for search functionality',
+    getTotalDistance:
+      '• Calculate total route distance\n• Returns distance in meters\n• Convert to km: distance / 1000',
+    getTotalDuration:
+      '• Calculate total route duration\n• Returns time in seconds\n• Convert to hours: duration / 3600',
+    fitMapToRoute:
+      '• Automatically fit map to show entire route\n• Adjusts zoom and center\n• Great for displaying complete directions',
+    clearDirections:
+      '• Remove directions from map\n• Clean up route display\n• Use before showing new routes',
+    createDirectionsService:
+      '• Create service for getting directions\n• Required for directions functionality\n• Use with DirectionsRenderer',
+    createDirectionsRenderer:
+      '• Create renderer for displaying directions\n• Attach to map to show routes\n• Use with DirectionsService',
+    createDistanceMatrixService:
+      '• Create service for distance calculations\n• Required for distance matrix\n• Use for multiple point calculations',
+    getDirectionsBounds:
+      '• Get geographic bounds of route\n• Useful for fitting map to route\n• Returns LatLngBounds object',
+    addMarkerDragListener:
+      '• Listen for marker drag events\n• Use for real-time position updates\n• Combine with drag end listener',
+    addMarkerDragEndListener:
+      '• Listen for marker drag completion\n• Use to save final positions\n• Trigger after drag operations',
+    isGoogleMapsLoaded:
+      '• Check if Google Maps API is ready\n• Use before calling map functions\n• Returns boolean status',
+    waitForGoogleMaps:
+      '• Wait for Google Maps to load\n• Use in async functions\n• Throws error if loading fails',
+    loadGoogleMaps:
+      '• Load Google Maps API\n• Specify required libraries\n• Use before creating maps',
+    geocode:
+      '• Synchronous geocoding with callback\n• Use for simple geocoding needs\n• Callback receives results array',
+    reverseGeocode:
+      '• Synchronous reverse geocoding\n• Use for coordinate to address conversion\n• Callback receives results array',
+    getDirections:
+      '• Synchronous directions with callback\n• Use for simple routing needs\n• Callback receives directions result',
+    getDistanceMatrix:
+      '• Synchronous distance matrix\n• Use for simple distance calculations\n• Callback receives matrix result',
+    renderDirections:
+      '• Display directions on map\n• Use with DirectionsResult\n• Automatically shows route',
+    geocodeWithComponents:
+      '• Geocode with country/region restrictions\n• Improves result accuracy\n• Use for specific geographic areas',
+    geocodeWithBounds:
+      '• Geocode within specific bounds\n• Limits search to geographic area\n• Improves local result relevance',
+    geocodeWithRegion:
+      '• Geocode with region bias\n• Influences result ranking\n• Use for location-specific searches',
+  };
+  return tips[functionName] || 'No tips available for this function';
+};
+
 function App() {
+  const [selectedPackage, setSelectedPackage] = useState<PackageType>('core');
   const [apiKey, setApiKey] = useState('YOUR_API_KEY');
   const [isLoaded, setIsLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<any>(null);
@@ -78,7 +450,7 @@ function App() {
   const [infoWindows, setInfoWindows] = useState<any[]>([]);
   const [selectedFunction, setSelectedFunction] = useState<string>('');
   const [status, setStatus] = useState(
-    'Enter your Google Maps API key to get started'
+    'Enter your Google Maps API key to get started and explore all the features below'
   );
   const [activeDemo, setActiveDemo] = useState('');
 
@@ -104,7 +476,10 @@ function App() {
 
     try {
       setStatus('Loading Google Maps API...');
-      await loadGoogleMaps({ apiKey, libraries: ['places', 'geometry'] });
+      await loadGoogleMaps({
+        apiKey,
+        libraries: ['places', 'geometry', 'marker'],
+      });
 
       setStatus('✅ Google Maps API loaded!');
       setIsLoaded(true);
@@ -112,6 +487,7 @@ function App() {
       const map = createMap('map-container', {
         center: { lat: 40.7128, lng: -74.006 },
         zoom: 10,
+        mapId: 'CORE_DEMO_MAP_ID',
       });
 
       setMapInstance(map);
@@ -223,7 +599,6 @@ function App() {
             const marker = addMarker(mapInstance.map, {
               position: center,
               title: markerTitle,
-              label: `${markers.length + 1}`,
             });
             setMarkers([...markers, marker]);
             setStatus(`📍 Added marker: ${markerTitle}`);
@@ -258,7 +633,7 @@ function App() {
           },
         },
         {
-          name: 'updateMarkerIcon',
+          name: 'updateMarkerContent',
           description: 'Update marker icon',
           action: () => {
             if (!mapInstance || markers.length === 0) {
@@ -266,10 +641,10 @@ function App() {
               return;
             }
             const marker = markers[selectedMarkerIndex] || markers[0];
-            updateMarkerIcon(marker, {
-              url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-              scaledSize: new google.maps.Size(32, 32),
-            });
+            const content = document.createElement('div');
+            content.innerHTML = '📍';
+            content.style.fontSize = '24px';
+            updateMarkerContent(marker, content);
             setStatus('🎨 Updated marker icon');
           },
         },
@@ -358,22 +733,6 @@ function App() {
             } else {
               setStatus('❌ Could not get marker position');
             }
-          },
-        },
-        {
-          name: 'setMarkerVisibility',
-          description: 'Toggle marker visibility',
-          action: () => {
-            if (!mapInstance || markers.length === 0) {
-              setStatus('⚠️ No markers available');
-              return;
-            }
-            const marker = markers[selectedMarkerIndex] || markers[0];
-            const isVisible = marker.getVisible();
-            setMarkerVisibility(marker, !isVisible);
-            setStatus(
-              `👁️ Marker visibility: ${!isVisible ? 'Shown' : 'Hidden'}`
-            );
           },
         },
         {
@@ -1395,19 +1754,211 @@ function App() {
         },
       ],
     },
+    {
+      category: '🗺️ Directions & Routes',
+      functions: [
+        {
+          name: 'getDirectionsAsync',
+          description: 'Get directions between two points',
+          action: async () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('🗺️ Getting directions from NYC to Boston...');
+              const results = await getDirectionsAsync({
+                origin: 'New York, NY',
+                destination: 'Boston, MA',
+                travelMode: google.maps.TravelMode.DRIVING,
+              });
+              setStatus(
+                `🗺️ Directions found! Distance: ${getTotalDistance(results)} km, Duration: ${getTotalDuration(results)} min`
+              );
+            } catch (error) {
+              setStatus(`❌ Failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'getTotalDistance',
+          description: 'Calculate total distance of route',
+          action: async () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('📏 Calculating route distance...');
+              const results = await getDirectionsAsync({
+                origin: 'New York, NY',
+                destination: 'Los Angeles, CA',
+                travelMode: google.maps.TravelMode.DRIVING,
+              });
+              const distance = getTotalDistance(results);
+              setStatus(`📏 Total distance: ${distance} km`);
+            } catch (error) {
+              setStatus(`❌ Failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'fitMapToRoute',
+          description: 'Fit map to show entire route',
+          action: async () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('🗺️ Fitting map to route...');
+              const results = await getDirectionsAsync({
+                origin: 'New York, NY',
+                destination: 'Miami, FL',
+                travelMode: google.maps.TravelMode.DRIVING,
+              });
+              fitMapToRoute(mapInstance.map, results);
+              setStatus('🗺️ Map fitted to route bounds');
+            } catch (error) {
+              setStatus(`❌ Failed: ${error.message}`);
+            }
+          },
+        },
+      ],
+    },
+    {
+      category: '🏪 Places & Autocomplete',
+      functions: [
+        {
+          name: 'createAutocomplete',
+          description: 'Create address autocomplete',
+          action: () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('🏪 Creating autocomplete input...');
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.placeholder = 'Search for a place...';
+              input.style.cssText =
+                'width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 4px;';
+
+              const autocomplete = createAutocomplete({
+                input,
+                types: ['establishment'],
+                bounds: new google.maps.LatLngBounds(
+                  new google.maps.LatLng(40.7, -74.1),
+                  new google.maps.LatLng(40.8, -73.9)
+                ),
+              });
+
+              addPlaceChangedListener(autocomplete, (place) => {
+                if (place.geometry?.location) {
+                  setStatus(`🏪 Place selected: ${place.name || 'Unknown'}`);
+                }
+              });
+
+              setStatus(
+                '🏪 Autocomplete created! Check the map area for the input field.'
+              );
+            } catch (error) {
+              setStatus(`❌ Failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'createSearchBox',
+          description: 'Create places search box',
+          action: () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('🔍 Creating search box...');
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.placeholder = 'Search for places...';
+              input.style.cssText =
+                'width: 100%; padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 4px;';
+
+              const searchBox = createSearchBox(input, mapInstance.map);
+
+              addPlacesChangedListener(searchBox, (places) => {
+                setStatus(`🔍 Found ${places.length} places`);
+              });
+
+              setStatus(
+                '🔍 Search box created! Check the map area for the input field.'
+              );
+            } catch (error) {
+              setStatus(`❌ Failed: ${error.message}`);
+            }
+          },
+        },
+      ],
+    },
+    {
+      category: '📏 Distance Matrix',
+      functions: [
+        {
+          name: 'getDistanceMatrixAsync',
+          description: 'Calculate distances between multiple points',
+          action: async () => {
+            if (!mapInstance) return;
+            try {
+              setStatus('📏 Calculating distance matrix...');
+              const results = await getDistanceMatrixAsync({
+                origins: ['New York, NY', 'Boston, MA'],
+                destinations: ['Chicago, IL', 'Miami, FL', 'Los Angeles, CA'],
+                travelMode: google.maps.TravelMode.DRIVING,
+              });
+
+              let message = '📏 Distance Matrix Results:\n';
+              const origins = ['NYC', 'Boston'];
+              const destinations = ['Chicago', 'Miami', 'LA'];
+
+              results.forEach((result) => {
+                const origin = origins[result.originIndex];
+                const destination = destinations[result.destinationIndex];
+                message += `${origin} → ${destination}: ${result.distance.text}\n`;
+              });
+
+              setStatus(message);
+            } catch (error) {
+              setStatus(`❌ Failed: ${error.message}`);
+            }
+          },
+        },
+      ],
+    },
   ];
+
+  // If React package is selected, render the React demo with package selector
+  if (selectedPackage === 'react') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Package Selector */}
+        <PackageSelector
+          selectedPackage={selectedPackage}
+          onPackageChange={setSelectedPackage}
+        />
+        <ReactDemo />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Package Selector */}
+      <PackageSelector
+        selectedPackage={selectedPackage}
+        onPackageChange={setSelectedPackage}
+      />
+
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-500 to-green-500 text-white py-8 px-6 shadow-lg">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">
-            🗺️ gmaps-kit/core Demo
-          </h1>
-          <p className="text-xl opacity-90">
-            Complete showcase of all 50+ functions
-          </p>
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">C</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                @gmaps-kit/core
+              </h1>
+              <p className="text-sm text-gray-600">
+                Framework-agnostic utilities for Google Maps
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1451,314 +2002,417 @@ function App() {
           </div>
 
           {/* Demo Functions */}
-          {isLoaded && (
-            <div>
-              <h3 className="text-gray-700 font-semibold mb-4">
-                🧪 Try gmaps-kit Functions
-              </h3>
+          <div className={`relative ${!isLoaded ? 'pointer-events-none' : ''}`}>
+            {!isLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/30 z-10 rounded-lg"></div>
+            )}
+            <h3 className="text-gray-700 font-semibold mb-4">
+              🧪 Try gmaps-kit Functions
+              {!isLoaded && (
+                <span className="text-xs text-red-500 ml-2">
+                  (Enter API key to enable)
+                </span>
+              )}
+            </h3>
 
-              {demoFunctions.map((category, categoryIndex) => (
-                <div key={categoryIndex} className="mb-4">
-                  <h4 className="text-gray-600 text-xs font-semibold uppercase tracking-wide mb-2 bg-gray-100 px-2 py-1 rounded">
-                    {category.category}
-                  </h4>
+            {demoFunctions.map((category, categoryIndex) => (
+              <div key={categoryIndex} className="mb-4">
+                <h4 className="text-gray-600 text-xs font-semibold uppercase tracking-wide mb-2 bg-gray-100 px-2 py-1 rounded">
+                  {category.category}
+                </h4>
 
-                  {category.functions.map((func, funcIndex) => (
-                    <button
-                      key={funcIndex}
-                      onClick={() => {
-                        setSelectedFunction(func.name);
-                        func.action();
-                      }}
-                      className={`w-full p-2 mb-1 text-left transition-all duration-200 rounded-md text-xs cursor-pointer ${
-                        selectedFunction === func.name
-                          ? 'bg-blue-100 border-blue-300 border text-blue-800'
-                          : 'bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className="font-medium">{func.name}</div>
-                      <div className="text-gray-500 text-xs mt-0.5">
-                        {func.description}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
+                {category.functions.map((func, funcIndex) => (
+                  <button
+                    key={funcIndex}
+                    onClick={() => {
+                      if (!isLoaded) {
+                        setStatus(
+                          '⚠️ Please enter your Google Maps API key first'
+                        );
+                        return;
+                      }
+                      setSelectedFunction(func.name);
+                      func.action();
+                    }}
+                    disabled={!isLoaded}
+                    className={`w-full p-2 mb-1 text-left transition-all duration-200 rounded-md text-xs ${
+                      !isLoaded
+                        ? 'cursor-not-allowed bg-gray-50 border-2 border-dashed border-gray-300 text-gray-600'
+                        : selectedFunction === func.name
+                          ? 'bg-blue-100 border-blue-300 border text-blue-800 cursor-pointer'
+                          : 'bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 hover:shadow-sm cursor-pointer'
+                    }`}
+                  >
+                    <div className="font-medium">{func.name}</div>
+                    <div className="text-gray-500 text-xs mt-0.5">
+                      {func.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 p-6">
-          {/* Map Container */}
-          <div className="google-card">
-            <div
-              id="map-container"
-              className="h-96 w-full bg-gray-100 flex items-center justify-center text-gray-500 rounded-lg"
-            >
-              {!isLoaded ? (
-                <div className="text-center">
-                  <div className="text-5xl mb-3">🗺️</div>
-                  <div>Enter your API key and click "Load Google Maps"</div>
+          <div className="flex gap-6">
+            {/* Map and Controls */}
+            <div className="flex-1">
+              {/* Map Container */}
+              <div className="google-card">
+                <div
+                  id="map-container"
+                  className="h-96 w-full bg-gray-100 flex items-center justify-center text-gray-500 rounded-lg"
+                >
+                  {!isLoaded ? (
+                    <div className="text-center">
+                      <div className="text-5xl mb-3">🗺️</div>
+                      <div className="text-lg font-medium mb-2">
+                        Welcome to gmaps-kit!
+                      </div>
+                      <div className="text-sm text-gray-600 mb-4">
+                        Enter your Google Maps API key above to start exploring
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        You can see all available features in the sidebar -
+                        they'll be enabled once you provide an API key
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-5xl mb-3">✅</div>
+                      <div>Map loaded! Try the functions in the sidebar</div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center">
-                  <div className="text-5xl mb-3">✅</div>
-                  <div>Map loaded! Try the functions in the sidebar</div>
+              </div>
+
+              {/* User Input Fields */}
+              {isLoaded && (
+                <div className="mt-6 google-card">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4">
+                    🎛️ User Input Fields
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Address to Geocode:
+                      </label>
+                      <input
+                        type="text"
+                        value={userAddress}
+                        onChange={(e) => setUserAddress(e.target.value)}
+                        placeholder="Enter address"
+                        className="google-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Coordinates (lat, lng):
+                      </label>
+                      <input
+                        type="text"
+                        value={userCoordinates}
+                        onChange={(e) => setUserCoordinates(e.target.value)}
+                        placeholder="40.7580, -73.9855"
+                        className="google-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Origin Address:
+                      </label>
+                      <input
+                        type="text"
+                        value={originAddress}
+                        onChange={(e) => setOriginAddress(e.target.value)}
+                        placeholder="New York, NY"
+                        className="google-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Destination Address:
+                      </label>
+                      <input
+                        type="text"
+                        value={destinationAddress}
+                        onChange={(e) => setDestinationAddress(e.target.value)}
+                        placeholder="Los Angeles, CA"
+                        className="google-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Marker Title:
+                      </label>
+                      <input
+                        type="text"
+                        value={markerTitle}
+                        onChange={(e) => setMarkerTitle(e.target.value)}
+                        placeholder="My Custom Marker"
+                        className="google-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        InfoWindow Content:
+                      </label>
+                      <input
+                        type="text"
+                        value={infoWindowContent}
+                        onChange={(e) => setInfoWindowContent(e.target.value)}
+                        placeholder="Hello from gmaps-kit!"
+                        className="google-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Selected Marker Index:
+                      </label>
+                      <input
+                        type="number"
+                        value={selectedMarkerIndex}
+                        onChange={(e) =>
+                          setSelectedMarkerIndex(Number(e.target.value))
+                        }
+                        min="0"
+                        max={markers.length - 1}
+                        className="google-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Search Place Type:
+                      </label>
+                      <input
+                        type="text"
+                        value={searchPlace}
+                        onChange={(e) => setSearchPlace(e.target.value)}
+                        placeholder="restaurant"
+                        className="google-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Autocomplete Input */}
+              {isLoaded && (
+                <div className="mt-6 google-card">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">
+                    🔍 Places Autocomplete
+                  </h4>
+                  <input
+                    id="autocomplete-input"
+                    type="text"
+                    placeholder="Search for places (restaurants, hotels, etc.)"
+                    className="google-input"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const input = e.target as HTMLInputElement;
+                        if (input.value.trim()) {
+                          // Create autocomplete and trigger search
+                          const autocomplete = createAutocomplete({ input });
+                          const place = autocomplete.getPlace();
+                          if (place && place.geometry) {
+                            const marker = addMarker(mapInstance.map, {
+                              position: {
+                                lat: place.geometry.location!.lat(),
+                                lng: place.geometry.location!.lng(),
+                              },
+                              title: place.name || 'Searched Place',
+                            });
+                            setMarkers([...markers, marker]);
+                            setMapCenter(mapInstance.map, {
+                              lat: place.geometry.location!.lat(),
+                              lng: place.geometry.location!.lng(),
+                            });
+                            setStatus(
+                              `✅ Added: ${place.name || 'Searched Place'}`
+                            );
+                          }
+                        }
+                      }
+                    }}
+                  />
+                  <p className="text-sm text-gray-500 mt-3">
+                    Type a place name and press Enter to add it to the map
+                  </p>
+                </div>
+              )}
+
+              {/* Search Box Input */}
+              {isLoaded && (
+                <div className="mt-6 google-card">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">
+                    🔍 Search Box
+                  </h4>
+                  <input
+                    id="search-box-input"
+                    type="text"
+                    placeholder="Search for places on the map"
+                    className="google-input"
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') {
+                        const input = e.target as HTMLInputElement;
+                        if (input.value.trim()) {
+                          try {
+                            setStatus(`🔍 Searching for: ${input.value}...`);
+
+                            // Use geocoding to find the place
+                            const results = await geocodeAsync(input.value);
+                            if (results.length > 0) {
+                              const result = results[0];
+
+                              // Add marker at the found location
+                              const marker = addMarker(mapInstance.map, {
+                                position: result.location,
+                                title: result.address,
+                              });
+                              setMarkers([...markers, marker]);
+
+                              // Center map on the result
+                              setMapCenter(mapInstance.map, result.location);
+                              setMapZoom(mapInstance.map, 15);
+
+                              setStatus(
+                                `✅ Found and added: ${result.address}`
+                              );
+                            } else {
+                              setStatus(
+                                `❌ No results found for: ${input.value}`
+                              );
+                            }
+                          } catch (error) {
+                            setStatus(`❌ Search failed: ${error.message}`);
+                          }
+                        }
+                      }
+                    }}
+                  />
+                  <p className="text-sm text-gray-500 mt-3">
+                    Type an address and press Enter to search and add to map
+                  </p>
+                </div>
+              )}
+
+              {/* Code Examples */}
+              {isLoaded && (
+                <div className="mt-6 google-card">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4">
+                    💻 Code Examples
+                  </h4>
+
+                  <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm overflow-auto">
+                    <div className="text-gray-500 mb-2">
+                      // Import all gmaps-kit/core functions
+                    </div>
+                    <div className="text-pink-600">import {`{`}</div>
+                    <div className="ml-5 text-blue-600">
+                      loadGoogleMaps, createMap, addMarker,
+                      <br />
+                      geocodeAsync, getDirectionsAsync,
+                      <br />
+                      createAutocomplete, getMapCenter,
+                      <br />
+                      setMapCenter, clearMarkers,
+                      <br />
+                      getTotalDistance, fitMapToRoute
+                    </div>
+                    <div className="text-pink-600">
+                      {`}`} from '@gmaps-kit/core';
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* Function Documentation Panel */}
+            {selectedFunction && (
+              <div className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto h-screen sticky top-0">
+                <div className="google-card">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                    📚 Function Documentation
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">
+                        {selectedFunction}
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {demoFunctions
+                          .flatMap((cat) => cat.functions)
+                          .find((func) => func.name === selectedFunction)
+                          ?.description || 'No description available'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="font-medium text-gray-700 mb-2">
+                        💻 Usage Example
+                      </h5>
+                      <div className="bg-gray-50 p-3 rounded-lg font-mono text-sm">
+                        <div className="text-gray-500 mb-2">
+                          // Import the function
+                        </div>
+                        <div className="text-pink-600">
+                          import {`{`} {selectedFunction} {`}`} from
+                          '@gmaps-kit/core';
+                        </div>
+                        <div className="mt-3 text-gray-500">// Basic usage</div>
+                        <div className="text-blue-600">
+                          {getFunctionExample(selectedFunction)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-medium text-gray-700 mb-2">
+                        📋 Parameters
+                      </h5>
+                      <div className="text-sm text-gray-600">
+                        {getFunctionParameters(selectedFunction)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-medium text-gray-700 mb-2">
+                        🔄 Returns
+                      </h5>
+                      <div className="text-sm text-gray-600">
+                        {getFunctionReturns(selectedFunction)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-medium text-gray-700 mb-2">
+                        💡 Tips
+                      </h5>
+                      <div className="text-sm text-gray-600">
+                        {getFunctionTips(selectedFunction)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* User Input Fields */}
-          {isLoaded && (
-            <div className="mt-6 google-card">
-              <h4 className="text-lg font-semibold text-gray-700 mb-4">
-                🎛️ User Input Fields
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address to Geocode:
-                  </label>
-                  <input
-                    type="text"
-                    value={userAddress}
-                    onChange={(e) => setUserAddress(e.target.value)}
-                    placeholder="Enter address"
-                    className="google-input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Coordinates (lat, lng):
-                  </label>
-                  <input
-                    type="text"
-                    value={userCoordinates}
-                    onChange={(e) => setUserCoordinates(e.target.value)}
-                    placeholder="40.7580, -73.9855"
-                    className="google-input"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Origin Address:
-                  </label>
-                  <input
-                    type="text"
-                    value={originAddress}
-                    onChange={(e) => setOriginAddress(e.target.value)}
-                    placeholder="New York, NY"
-                    className="google-input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Destination Address:
-                  </label>
-                  <input
-                    type="text"
-                    value={destinationAddress}
-                    onChange={(e) => setDestinationAddress(e.target.value)}
-                    placeholder="Los Angeles, CA"
-                    className="google-input"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Marker Title:
-                  </label>
-                  <input
-                    type="text"
-                    value={markerTitle}
-                    onChange={(e) => setMarkerTitle(e.target.value)}
-                    placeholder="My Custom Marker"
-                    className="google-input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    InfoWindow Content:
-                  </label>
-                  <input
-                    type="text"
-                    value={infoWindowContent}
-                    onChange={(e) => setInfoWindowContent(e.target.value)}
-                    placeholder="Hello from gmaps-kit!"
-                    className="google-input"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Selected Marker Index:
-                  </label>
-                  <input
-                    type="number"
-                    value={selectedMarkerIndex}
-                    onChange={(e) =>
-                      setSelectedMarkerIndex(Number(e.target.value))
-                    }
-                    min="0"
-                    max={markers.length - 1}
-                    className="google-input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search Place Type:
-                  </label>
-                  <input
-                    type="text"
-                    value={searchPlace}
-                    onChange={(e) => setSearchPlace(e.target.value)}
-                    placeholder="restaurant"
-                    className="google-input"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Autocomplete Input */}
-          {isLoaded && (
-            <div className="mt-6 google-card">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">
-                🔍 Places Autocomplete
-              </h4>
-              <input
-                id="autocomplete-input"
-                type="text"
-                placeholder="Search for places (restaurants, hotels, etc.)"
-                className="google-input"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const input = e.target as HTMLInputElement;
-                    if (input.value.trim()) {
-                      // Create autocomplete and trigger search
-                      const autocomplete = createAutocomplete({ input });
-                      const place = autocomplete.getPlace();
-                      if (place && place.geometry) {
-                        const marker = addMarker(mapInstance.map, {
-                          position: {
-                            lat: place.geometry.location!.lat(),
-                            lng: place.geometry.location!.lng(),
-                          },
-                          title: place.name || 'Searched Place',
-                        });
-                        setMarkers([...markers, marker]);
-                        setMapCenter(mapInstance.map, {
-                          lat: place.geometry.location!.lat(),
-                          lng: place.geometry.location!.lng(),
-                        });
-                        setStatus(
-                          `✅ Added: ${place.name || 'Searched Place'}`
-                        );
-                      }
-                    }
-                  }
-                }}
-              />
-              <p className="text-sm text-gray-500 mt-3">
-                Type a place name and press Enter to add it to the map
-              </p>
-            </div>
-          )}
-
-          {/* Search Box Input */}
-          {isLoaded && (
-            <div className="mt-6 google-card">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">
-                🔍 Search Box
-              </h4>
-              <input
-                id="search-box-input"
-                type="text"
-                placeholder="Search for places on the map"
-                className="google-input"
-                onKeyDown={async (e) => {
-                  if (e.key === 'Enter') {
-                    const input = e.target as HTMLInputElement;
-                    if (input.value.trim()) {
-                      try {
-                        setStatus(`🔍 Searching for: ${input.value}...`);
-
-                        // Use geocoding to find the place
-                        const results = await geocodeAsync(input.value);
-                        if (results.length > 0) {
-                          const result = results[0];
-
-                          // Add marker at the found location
-                          const marker = addMarker(mapInstance.map, {
-                            position: result.location,
-                            title: result.address,
-                          });
-                          setMarkers([...markers, marker]);
-
-                          // Center map on the result
-                          setMapCenter(mapInstance.map, result.location);
-                          setMapZoom(mapInstance.map, 15);
-
-                          setStatus(`✅ Found and added: ${result.address}`);
-                        } else {
-                          setStatus(`❌ No results found for: ${input.value}`);
-                        }
-                      } catch (error) {
-                        setStatus(`❌ Search failed: ${error.message}`);
-                      }
-                    }
-                  }
-                }}
-              />
-              <p className="text-sm text-gray-500 mt-3">
-                Type an address and press Enter to search and add to map
-              </p>
-            </div>
-          )}
-
-          {/* Code Examples */}
-          {isLoaded && (
-            <div className="mt-6 google-card">
-              <h4 className="text-lg font-semibold text-gray-700 mb-4">
-                💻 Code Examples
-              </h4>
-
-              <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm overflow-auto">
-                <div className="text-gray-500 mb-2">
-                  // Import all gmaps-kit/core functions
-                </div>
-                <div className="text-pink-600">import {`{`}</div>
-                <div className="ml-5 text-blue-600">
-                  loadGoogleMaps, createMap, addMarker,
-                  <br />
-                  geocodeAsync, getDirectionsAsync,
-                  <br />
-                  createAutocomplete, getMapCenter,
-                  <br />
-                  setMapCenter, clearMarkers,
-                  <br />
-                  getTotalDistance, fitMapToRoute
-                </div>
-                <div className="text-pink-600">
-                  {`}`} from '@gmaps-kit/core';
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

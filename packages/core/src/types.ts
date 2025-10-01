@@ -5,6 +5,7 @@ export interface MapOptions {
   center: google.maps.LatLngLiteral;
   zoom: number;
   mapTypeId?: google.maps.MapTypeId;
+  mapId?: string;
   styles?: google.maps.MapTypeStyle[];
   disableDefaultUI?: boolean;
   zoomControl?: boolean;
@@ -18,9 +19,7 @@ export interface MapOptions {
 export interface MarkerOptions {
   position: google.maps.LatLngLiteral;
   title?: string;
-  label?: string;
-  icon?: string | google.maps.Icon | google.maps.Symbol;
-  animation?: google.maps.Animation;
+  content?: HTMLElement;
   draggable?: boolean;
   clickable?: boolean;
   zIndex?: number;
@@ -105,7 +104,7 @@ export interface ScriptLoaderOptions {
 
 export interface MapInstance {
   map: google.maps.Map;
-  markers: google.maps.Marker[];
+  markers: google.maps.marker.AdvancedMarkerElement[];
   infoWindows: google.maps.InfoWindow[];
   autocomplete?: google.maps.places.Autocomplete;
   directionsService?: google.maps.DirectionsService;
