@@ -1,6 +1,6 @@
 {
   "name": "@gmaps-kit/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Framework-agnostic core utilities for Google Maps JavaScript SDK - geocoding, directions, places, markers, street view, and more",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
