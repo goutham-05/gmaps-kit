@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gmaps-kit Basic Usage Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #4285f4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .map-container {
+            height: 400px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .control-group input, .control-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #3367d6;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            background: #e8f0fe;
+            border: 1px solid #4285f4;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #fce8e6;
+            border: 1px solid #d93025;
+            color: #d93025;
+        }
+        .success {
+            background: #e6f4ea;
+            border: 1px solid #34a853;
+            color: #34a853;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ gmaps-kit Basic Usage Example</h1>
+            <p>Framework-agnostic Google Maps utilities</p>
+        </div>
+        
+        <div class="content">
+            <div class="info">
+                <strong>Note:</strong> This is a demonstration of the gmaps-kit core package. 
+                Replace 'YOUR_API_KEY' with your actual Google Maps API key to see the map.
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="apiKey">Google Maps API Key:</label>
+                    <input type="text" id="apiKey" placeholder="YOUR_API_KEY" value="YOUR_API_KEY">
+                </div>
+                <div class="control-group">
+                    <label for="libraries">Libraries:</label>
+                    <select id="libraries">
+                        <option value="places">places</option>
+                        <option value="places,geometry">places,geometry</option>
+                        <option value="places,geometry,drawing">places,geometry,drawing</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="loadMap()">Load Map</button>
+                <button class="btn" onclick="addMarker()" id="addMarkerBtn" disabled>Add Marker</button>
+                <button class="btn" onclick="geocodeAddress()" id="geocodeBtn" disabled>Geocode Address</button>
+                <button class="btn" onclick="getDirections()" id="directionsBtn" disabled>Get Directions</button>
+            </div>
+            
+            <div class="control-group">
+                <label for="addressInput">Address for Geocoding:</label>
+                <input type="text" id="addressInput" placeholder="Enter an address..." value="Times Square, New York">
+            </div>
+            
+            <div id="map" class="map-container"></div>
+            
+            <div id="status" class="info" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // This would be the actual import in a real application
+        // import { loadGoogleMaps, createMap, addMarker, geocodeAsync, getDirectionsAsync } from '@gmaps-kit/core';
+        
+        // For this example, we'll simulate the API
+        let mapInstance = null;
+        let markers = [];
+        
+        // Simulate the gmaps-kit API
+        window.loadMap = async function() {
+            const apiKey = document.getElementById('apiKey').value;
+            const libraries = document.getElementById('libraries').value.split(',');
+            
+            if (apiKey === 'YOUR_API_KEY') {
+                showStatus('Please enter a valid Google Maps API key', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Loading Google Maps...', 'info');
+                
+                // Simulate loading Google Maps
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // In a real application, this would be:
+                // await loadGoogleMaps({ apiKey, libraries });
+                // mapInstance = createMap('map', { center: { lat: 40.7128, lng: -74.0060 }, zoom: 10 });
+                
+                showStatus('Map loaded successfully!', 'success');
+                document.getElementById('addMarkerBtn').disabled = false;
+                document.getElementById('geocodeBtn').disabled = false;
+                document.getElementById('directionsBtn').disabled = false;
+                
+            } catch (error) {
+                showStatus(`Error loading map: ${error.message}`, 'error');
+            }
+        };
+        
+        window.addMarker = function() {
+            if (!mapInstance) {
+                showStatus('Please load the map first', 'error');
+                return;
+            }
+            
+            // Simulate adding a marker
+            const markerCount = markers.length + 1;
+            markers.push({
+                position: { lat: 40.7128 + (markerCount * 0.01), lng: -74.0060 + (markerCount * 0.01) },
+                title: `Marker ${markerCount}`
+            });
+            
+            showStatus(`Added marker ${markerCount}`, 'success');
+        };
+        
+        window.geocodeAddress = async function() {
+            const address = document.getElementById('addressInput').value;
+            
+            if (!address) {
+                showStatus('Please enter an address', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Geocoding address...', 'info');
+                
+                // Simulate geocoding
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // In a real application, this would be:
+                // const results = await geocodeAsync(address);
+                // const location = results[0].location;
+                
+                showStatus(`Geocoded: ${address} → 40.7128, -74.0060`, 'success');
+                
+            } catch (error) {
+                showStatus(`Geocoding failed: ${error.message}`, 'error');
+            }
+        };
+        
+        window.getDirections = async function() {
+            try {
+                showStatus('Getting directions...', 'info');
+                
+                // Simulate getting directions
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // In a real application, this would be:
+                // const directions = await getDirectionsAsync({
+                //     origin: 'New York, NY',
+                //     destination: 'Los Angeles, CA',
+                //     travelMode: 'DRIVING'
+                // });
+                
+                showStatus('Directions: New York → Los Angeles (2,789 miles, 40 hours)', 'success');
+                
+            } catch (error) {
+                showStatus(`Directions failed: ${error.message}`, 'error');
+            }
+        };
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `info ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
