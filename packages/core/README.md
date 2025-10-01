@@ -5,6 +5,12 @@ Framework-agnostic core utilities for Google Maps JavaScript SDK - geocoding, di
 [![npm version](https://badge.fury.io/js/@gmaps-kit%2Fcore.svg)](https://badge.fury.io/js/@gmaps-kit%2Fcore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## 🚀 Live Demo
+
+**Try it out:** [https://demo-app-rouge-five.vercel.app/](https://demo-app-rouge-five.vercel.app/)
+
+See all features in action with interactive examples!
+
 ## Features
 
 - 🗺️ **Map Management** - Create and manage Google Maps instances

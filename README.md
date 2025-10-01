@@ -2,6 +2,12 @@
 
 An open-source toolkit around the Google Maps JavaScript SDK that simplifies usage for frontend teams by providing framework-agnostic utilities and optional framework-specific wrappers.
 
+## 🚀 Live Demo
+
+**Try it out:** [https://demo-app-rouge-five.vercel.app/](https://demo-app-rouge-five.vercel.app/)
+
+The demo showcases all features including maps, geocoding, directions, and places functionality.
+
 ## 🚀 Features
 
 - **Framework-agnostic core** - Plain TypeScript functions & utilities
@@ -146,7 +152,9 @@ const places = new PlacesClient({ apiKey: 'YOUR_API_KEY' });
 const geocode = new GeocodingClient({ apiKey: 'YOUR_API_KEY' });
 
 const coffeeShops = await places.textSearch({ query: 'coffee in Seattle' });
-const geocodeResult = await geocode.geocode({ address: '221B Baker Street, London' });
+const geocodeResult = await geocode.geocode({
+  address: '221B Baker Street, London',
+});
 ```
 
 ## 📚 API Reference
