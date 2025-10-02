@@ -427,4 +427,79 @@ For questions and support, please open an issue on our GitHub repository.
 
 ---
 
-**Note**: This project is currently in Phase 1 (Core Package). React, Vue, and Angular wrappers will be added in future phases.
+## ⚛️ React Package
+
+The React package provides 20 specialized hooks and components for Google Maps integration:
+
+### Installation
+
+```bash
+npm install @gmaps-kit/react @gmaps-kit/core
+```
+
+### Quick Start
+
+```tsx
+import { useGoogleMaps, useMap, Map } from '@gmaps-kit/react';
+
+function App() {
+  const { isLoaded } = useGoogleMaps({
+    apiKey: 'YOUR_API_KEY',
+    libraries: ['places'],
+  });
+
+  const { map } = useMap({
+    center: { lat: 40.7128, lng: -74.006 },
+    zoom: 12,
+  });
+
+  if (!isLoaded) return <div>Loading...</div>;
+
+  return <Map mapInstance={map} />;
+}
+```
+
+### Available Hooks (20 Total)
+
+**Core Hooks:**
+
+- `useGoogleMaps` - Load Google Maps SDK
+- `useMap` - Map management
+- `useMarkers` - Marker management
+- `useMapEvents` - Map event handling
+
+**Geocoding Hooks:**
+
+- `useGeocoding` - Client-side geocoding
+- `useGeocodingService` - Server-side geocoding
+
+**Places Hooks:**
+
+- `usePlaces` - Legacy Places API
+- `usePlacesNew` - **New Places API (New)** 🚀
+
+**Directions & Routing:**
+
+- `useDirections` - Route calculations
+- `useBicycling` - Bicycling layer
+- `useTraffic` - Traffic layer
+- `useTransit` - Transit layer
+
+**Advanced Features:**
+
+- `useClustering` - Marker clustering
+- `useDistanceMatrix` - Distance calculations
+- `useElevation` - Elevation data
+- `useGeometry` - Geometric calculations
+- `useHeatmap` - Heatmap visualization
+- `useInfoWindows` - InfoWindow management
+- `useMaxZoom` - Zoom management
+- `useStreetView` - Street View functionality
+
+### Components
+
+- `Map` - Google Maps component
+- `Marker` - Marker component
+- `InfoWindow` - InfoWindow component
+
+**Note**: Vue and Angular wrappers will be added in future phases.
