@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { PackageSelector, PackageType } from './components/PackageSelector';
 import { ReactDemo } from './components/ReactDemo';
 import { DocsSection } from './components/DocsSection';
@@ -2785,6 +2786,7 @@ function App() {
         </div>
       </div>
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
