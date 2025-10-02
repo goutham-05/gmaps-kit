@@ -12,6 +12,7 @@
     "@gmaps-kit/core": "^1.0.1",
     "@gmaps-kit/react": "^1.0.1",
     "@tailwindcss/vite": "^4.1.13",
+    "@vercel/analytics": "^1.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
