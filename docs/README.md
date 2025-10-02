@@ -41,7 +41,7 @@ Framework-agnostic utilities for Google Maps JavaScript API:
 
 React hooks and components for Google Maps:
 
-- 19 specialized hooks
+- 20 specialized hooks
 - React components (Map, Marker, InfoWindow)
 - State management
 - Event handling

@@ -113,7 +113,7 @@ getDirections(
 );
 ```
 
-### Places
+### Places (Legacy API)
 
 ```javascript
 import { PlacesClient } from '@gmaps-kit/core';
@@ -127,6 +127,71 @@ const results = await placesClient.textSearch({
   query: 'restaurants in New York',
   location: { lat: 40.7128, lng: -74.006 },
   radius: 1000,
+});
+```
+
+### Places API (New) - Enhanced Features
+
+```javascript
+import { PlacesNewClient } from '@gmaps-kit/core';
+
+const placesNewClient = new PlacesNewClient({
+  apiKey: 'YOUR_API_KEY',
+});
+
+// Text search with enhanced data
+const textResults = await placesNewClient.textSearch({
+  textQuery: 'restaurants in New York',
+  locationBias: {
+    circle: {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radius: 1000,
+    },
+  },
+  maxResultCount: 10,
+  minRating: 4.0,
+});
+
+// Nearby search with better CORS support
+const nearbyResults = await placesNewClient.nearbySearch({
+  includedTypes: ['restaurant', 'cafe'],
+  locationRestriction: {
+    circle: {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radius: 1000,
+    },
+  },
+  maxResultCount: 10,
+  minRating: 4.0,
+});
+
+// Get detailed place information
+const placeDetails = await placesNewClient.placeDetails({
+  placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
+});
+
+// Place autocomplete
+const autocompleteResults = await placesNewClient.autocomplete({
+  input: 'restaurants in',
+  locationBias: {
+    circle: {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radius: 1000,
+    },
+  },
+});
+
+// Get place photos
+const photo = await placesNewClient.getPhoto({
+  name: 'photos/123',
+  maxWidthPx: 400,
+  maxHeightPx: 300,
+});
+
+// Build photo URL
+const photoUrl = placesNewClient.buildPhotoUrl('photos/123', {
+  maxWidthPx: 400,
+  maxHeightPx: 300,
 });
 ```
 

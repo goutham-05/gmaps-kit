@@ -82,7 +82,7 @@ const MyMap = () => {
         <div>
           <h4 className="font-medium text-blue-900">React Package</h4>
           <ul className="text-sm text-blue-800 mt-1">
-            <li>• 19 specialized hooks</li>
+            <li>• 20 specialized hooks</li>
             <li>• React components</li>
             <li>• State management</li>
             <li>• Event handling</li>

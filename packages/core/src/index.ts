@@ -105,7 +105,7 @@ export {
   fitMapToRoute,
 } from './directions';
 
-// Places web service utilities
+// Places web service utilities (Legacy API)
 export {
   PlacesClient,
   PlacesApiError,
@@ -137,6 +137,39 @@ export type {
   PlacesRetryConfig,
   PlacesRetryStatus,
 } from './places';
+
+// Places API (New) utilities
+export { PlacesNewClient, PlacesNewApiError } from './places-new';
+
+export type {
+  PlacesNewClientOptions,
+  PlacesNewApiStatus,
+  PlacesNewLatLngLiteral,
+  PlacesNewLocation,
+  PlacesNewCircle,
+  PlacesNewLocationRestriction,
+  PlacesNewTextSearchRequest,
+  PlacesNewTextSearchResponse,
+  PlacesNewNearbySearchRequest,
+  PlacesNewNearbySearchResponse,
+  PlacesNewPlaceDetailsRequest,
+  PlacesNewPlaceDetailsResponse,
+  PlacesNewAutocompleteRequest,
+  PlacesNewAutocompleteResponse,
+  PlacesNewPhotoRequest,
+  PlacesNewPhotoResponse,
+  PlacesNewPlace,
+  PlacesNewPhoto,
+  PlacesNewAuthorAttribution,
+  PlacesNewReview,
+  PlacesNewOpeningHours,
+  PlacesNewOpeningHoursPeriod,
+  PlacesNewSuggestion,
+  PlacesNewPlacePrediction,
+  PlacesNewQueryPrediction,
+  PlacesNewRetryConfig,
+  PlacesNewRetryStatus,
+} from './places-new';
 
 // Street View utilities
 export {

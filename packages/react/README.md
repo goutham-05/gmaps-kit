@@ -178,9 +178,9 @@ function DirectionsExample() {
 }
 ```
 
-### usePlaces
+### usePlaces (Legacy API)
 
-Search and manage places:
+Search and manage places with the legacy Places API:
 
 ```tsx
 import { usePlaces } from '@gmaps-kit/react';
@@ -218,6 +218,119 @@ function PlacesExample() {
   );
 }
 ```
+
+### usePlacesNew (Enhanced Places API)
+
+Search and manage places with the new Places API (New) - better CORS support, enhanced data, and modern features:
+
+```tsx
+import { usePlacesNew } from '@gmaps-kit/react';
+
+function PlacesNewExample() {
+  const {
+    textSearch,
+    nearbySearch,
+    placeDetails,
+    autocomplete,
+    getPhoto,
+    buildPhotoUrl,
+    isLoading,
+    error,
+  } = usePlacesNew({
+    apiKey: 'YOUR_API_KEY',
+    // No baseUrl needed - direct API calls with better CORS support!
+  });
+
+  const handleTextSearch = async () => {
+    try {
+      const results = await textSearch({
+        textQuery: 'restaurants in New York',
+        locationBias: {
+          circle: {
+            center: { latitude: 40.7128, longitude: -74.006 },
+            radius: 1000,
+          },
+        },
+        maxResultCount: 10,
+        minRating: 4.0,
+      });
+      console.log('Text search results:', results);
+    } catch (error) {
+      console.error('Search failed:', error);
+    }
+  };
+
+  const handleNearbySearch = async () => {
+    try {
+      const results = await nearbySearch({
+        includedTypes: ['restaurant', 'cafe'],
+        locationRestriction: {
+          circle: {
+            center: { latitude: 40.7128, longitude: -74.006 },
+            radius: 1000,
+          },
+        },
+        maxResultCount: 10,
+        minRating: 4.0,
+      });
+      console.log('Nearby search results:', results);
+    } catch (error) {
+      console.error('Search failed:', error);
+    }
+  };
+
+  const handlePlaceDetails = async () => {
+    try {
+      const details = await placeDetails({
+        placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
+      });
+      console.log('Place details:', details);
+    } catch (error) {
+      console.error('Details failed:', error);
+    }
+  };
+
+  const handleAutocomplete = async () => {
+    try {
+      const results = await autocomplete({
+        input: 'restaurants in',
+        locationBias: {
+          circle: {
+            center: { latitude: 40.7128, longitude: -74.006 },
+            radius: 1000,
+          },
+        },
+      });
+      console.log('Autocomplete results:', results);
+    } catch (error) {
+      console.error('Autocomplete failed:', error);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleTextSearch}>Text Search</button>
+      <button onClick={handleNearbySearch}>Nearby Search</button>
+      <button onClick={handlePlaceDetails}>Get Place Details</button>
+      <button onClick={handleAutocomplete}>Autocomplete</button>
+
+      {isLoading && <p>Searching...</p>}
+      {error && <p>Error: {error.message}</p>}
+    </div>
+  );
+}
+```
+
+### Key Advantages of Places API (New)
+
+| Feature            | Legacy API        | New API (New)              |
+| ------------------ | ----------------- | -------------------------- |
+| **CORS Support**   | ❌ Requires proxy | ✅ Direct browser requests |
+| **Request Format** | Query parameters  | JSON body                  |
+| **Authentication** | API key in URL    | API key in header          |
+| **Data Quality**   | Basic             | Enhanced with more fields  |
+| **Error Handling** | Limited           | Comprehensive              |
+| **Rate Limiting**  | Basic             | Advanced                   |
 
 ### useMarkers
 
@@ -344,6 +457,98 @@ const MyComponent: React.FC = () => {
   // TypeScript will provide full intellisense
 };
 ```
+
+## Complete Hooks Reference
+
+### Core Hooks
+
+#### useGoogleMaps
+
+Load Google Maps SDK and manage loading state.
+
+#### useMap
+
+Create and manage Google Map instances.
+
+#### useMarkers
+
+Manage markers on the map.
+
+#### useMapEvents
+
+Handle map events (click, drag, etc.).
+
+### Geocoding Hooks
+
+#### useGeocoding
+
+Client-side geocoding with JavaScript SDK.
+
+#### useGeocodingService
+
+Server-side geocoding with REST API.
+
+### Places Hooks
+
+#### usePlaces
+
+Legacy Places API integration.
+
+#### usePlacesNew
+
+🚀 **New Places API (New)** with enhanced CORS support.
+
+### Directions & Routing
+
+#### useDirections
+
+Calculate and display routes.
+
+#### useBicycling
+
+Bicycling layer and routing.
+
+#### useTraffic
+
+Traffic layer and data.
+
+#### useTransit
+
+Transit layer and routing.
+
+### Advanced Features
+
+#### useClustering
+
+Marker clustering for performance.
+
+#### useDistanceMatrix
+
+Calculate distances and travel times.
+
+#### useElevation
+
+Elevation data and terrain.
+
+#### useGeometry
+
+Geometric calculations (distance, bearing, area).
+
+#### useHeatmap
+
+Heatmap visualization.
+
+#### useInfoWindows
+
+Manage multiple InfoWindows.
+
+#### useMaxZoom
+
+Maximum zoom level management.
+
+#### useStreetView
+
+Street View panorama management.
 
 ## Requirements
 

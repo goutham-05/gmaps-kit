@@ -21,6 +21,13 @@ export type {
   PlacesHookError,
 } from './hooks/usePlaces';
 
+export { usePlacesNew } from './hooks/usePlacesNew';
+export type {
+  UsePlacesNewOptions,
+  UsePlacesNewReturn,
+  PlacesNewHookError,
+} from './hooks/usePlacesNew';
+
 export { useGeocodingService } from './hooks/useGeocodingService';
 export type {
   UseGeocodingServiceOptions,
@@ -54,56 +61,58 @@ export type {
   UseDirectionsReturn,
 } from './hooks/useDirections';
 
-// export { useDistanceMatrix } from './hooks/useDistanceMatrix';
-// export type {
-//   UseDistanceMatrixReturn,
-// } from './hooks/useDistanceMatrix';
+export { useDistanceMatrix } from './hooks/useDistanceMatrix';
+export type {
+  DistanceMatrixRequest,
+  DistanceMatrixResult,
+  UseDistanceMatrixReturn,
+} from './hooks/useDistanceMatrix';
 
-// export { useElevation } from './hooks/useElevation';
-// export type {
-//   UseElevationReturn,
-// } from './hooks/useElevation';
+export { useElevation } from './hooks/useElevation';
+export type {
+  ElevationRequest,
+  ElevationResult,
+  UseElevationReturn,
+} from './hooks/useElevation';
 
-// export { useGeometry } from './hooks/useGeometry';
-// export type {
-//   UseGeometryReturn,
-// } from './hooks/useGeometry';
+export { useGeometry } from './hooks/useGeometry';
+export type {
+  GeometryCalculation,
+  UseGeometryReturn,
+} from './hooks/useGeometry';
 
-// export { useHeatmap } from './hooks/useHeatmap';
-// export type {
-//   HeatmapOptions,
-//   UseHeatmapReturn,
-// } from './hooks/useHeatmap';
+export { useHeatmap } from './hooks/useHeatmap';
+export type {
+  HeatmapData,
+  HeatmapOptions,
+  UseHeatmapReturn,
+} from './hooks/useHeatmap';
 
-// export { useInfoWindows } from './hooks/useInfoWindows';
-// export type {
-//   InfoWindowOptions,
-//   UseInfoWindowsReturn,
-// } from './hooks/useInfoWindows';
+export { useInfoWindows } from './hooks/useInfoWindows';
+export type {
+  InfoWindowOptions,
+  UseInfoWindowsReturn,
+} from './hooks/useInfoWindows';
 
-// export { useMapEvents } from './hooks/useMapEvents';
-// export type {
-//   MapEventHandlers,
-//   MapEventState,
-//   UseMapEventsReturn,
-// } from './hooks/useMapEvents';
+export { useMapEvents } from './hooks/useMapEvents';
+export type {
+  MapEventHandlers,
+  MapEventState,
+  UseMapEventsReturn,
+} from './hooks/useMapEvents';
 
-// export { useMaxZoom } from './hooks/useMaxZoom';
-// export type {
-//   UseMaxZoomReturn,
-// } from './hooks/useMaxZoom';
+export { useMaxZoom } from './hooks/useMaxZoom';
+export type {
+  MaxZoomRequest,
+  MaxZoomResult,
+  UseMaxZoomReturn,
+} from './hooks/useMaxZoom';
 
-// export { useTraffic } from './hooks/useTraffic';
-// export type {
-//   TrafficOptions,
-//   UseTrafficReturn,
-// } from './hooks/useTraffic';
+export { useTraffic } from './hooks/useTraffic';
+export type { TrafficOptions, UseTrafficReturn } from './hooks/useTraffic';
 
-// export { useTransit } from './hooks/useTransit';
-// export type {
-//   TransitOptions,
-//   UseTransitReturn,
-// } from './hooks/useTransit';
+export { useTransit } from './hooks/useTransit';
+export type { TransitOptions, UseTransitReturn } from './hooks/useTransit';
 
 // Components
 export { Map } from './components/Map';

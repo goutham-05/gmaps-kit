@@ -9,7 +9,20 @@ import {
   useGeocoding,
   useGeocodingService,
   usePlaces,
+  usePlacesNew,
   useStreetView,
+  useDirections,
+  useBicycling,
+  useClustering,
+  useDistanceMatrix,
+  useElevation,
+  useGeometry,
+  useHeatmap,
+  useInfoWindows,
+  useMapEvents,
+  useMaxZoom,
+  useTraffic,
+  useTransit,
 } from '@gmaps-kit/react';
 
 export const ReactDemo: React.FC = () => {
@@ -1856,7 +1869,7 @@ export const ReactDemo: React.FC = () => {
                   </div>
 
                   <div className="text-xs text-gray-500 mt-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded">
-                    💡 <strong>All 19 Hooks:</strong> This demo showcases every
+                    💡 <strong>All 20 Hooks:</strong> This demo showcases every
                     single hook available in @gmaps-kit/react. Each button
                     demonstrates the hook's functionality with real-time
                     feedback!
@@ -2114,7 +2127,7 @@ export const ReactDemo: React.FC = () => {
 
                   <div>
                     <h5 className="font-medium text-gray-700 mb-2">
-                      🎣 All 19 Hooks
+                      🎣 All 20 Hooks
                     </h5>
                     <div className="text-xs text-gray-500 mb-2 p-2 bg-blue-50 rounded">
                       💡 <strong>Complete Hook Library:</strong> Every hook
@@ -2302,7 +2315,7 @@ export const ReactDemo: React.FC = () => {
                       <div>• Event handling built-in</div>
                       <div>• Performance optimized</div>
                       <div>
-                        • <strong>19 specialized hooks</strong> for all use
+                        • <strong>20 specialized hooks</strong> for all use
                         cases
                       </div>
                       <div>• Complete Google Maps API coverage</div>

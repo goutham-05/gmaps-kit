@@ -75,6 +75,8 @@ import {
   // NEW: Web Service Clients
   GeocodingClient,
   PlacesClient,
+  // NEW: Places API (New) - Enhanced features
+  PlacesNewClient,
   // NEW: Street View utilities
   createStreetViewPanorama,
   setStreetViewPosition,
@@ -488,6 +490,8 @@ function App() {
   const [geocodingClient, setGeocodingClient] =
     useState<GeocodingClient | null>(null);
   const [placesClient, setPlacesClient] = useState<PlacesClient | null>(null);
+  const [placesNewClient, setPlacesNewClient] =
+    useState<PlacesNewClient | null>(null);
   const [streetViewInstance, setStreetViewInstance] = useState<any>(null);
 
   const handleLoadMaps = async () => {
@@ -517,8 +521,10 @@ function App() {
       // Initialize web service clients
       const geocoding = new GeocodingClient({ apiKey });
       const places = new PlacesClient({ apiKey });
+      const placesNew = new PlacesNewClient({ apiKey });
       setGeocodingClient(geocoding);
       setPlacesClient(places);
+      setPlacesNewClient(placesNew);
 
       setStatus('✅ Map created! Ready to explore gmaps-kit/core features');
     } catch (error) {
@@ -2100,6 +2106,158 @@ function App() {
               );
             } catch (error) {
               setStatus(`❌ Place details failed: ${error.message}`);
+            }
+          },
+        },
+      ],
+    },
+    {
+      category: '🚀 Places API (New) - Enhanced Features',
+      functions: [
+        {
+          name: 'placesNewClient.textSearch',
+          description: 'Text search with enhanced data and better CORS',
+          action: async () => {
+            if (!placesNewClient) return;
+            try {
+              setStatus(`🚀 Searching places via NEW API: ${searchPlace}...`);
+              const response = await placesNewClient.textSearch({
+                textQuery: `${searchPlace} in New York`,
+                locationBias: {
+                  circle: {
+                    center: { latitude: 40.7128, longitude: -74.006 },
+                    radius: 1000,
+                  },
+                },
+                maxResultCount: 5,
+                minRating: 3.0,
+              });
+
+              if (response.places && response.places.length > 0) {
+                const place = response.places[0];
+                const marker = addMarker(mapInstance.map, {
+                  position: {
+                    lat: place.location.latitude,
+                    lng: place.location.longitude,
+                  },
+                  title: place.displayName?.text || 'Found Place',
+                });
+                setMarkers([...markers, marker]);
+                setStatus(
+                  `✅ NEW API Found: ${place.displayName?.text || 'Place'} (Rating: ${place.rating || 'N/A'})`
+                );
+              } else {
+                setStatus('❌ No places found via NEW API');
+              }
+            } catch (error) {
+              setStatus(`❌ NEW API failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'placesNewClient.nearbySearch',
+          description: 'Nearby search with enhanced filtering',
+          action: async () => {
+            if (!placesNewClient) return;
+            try {
+              const center = getMapCenter(mapInstance.map);
+              setStatus('🚀 Searching nearby places via NEW API...');
+              const response = await placesNewClient.nearbySearch({
+                includedTypes: ['restaurant', 'cafe'],
+                locationRestriction: {
+                  circle: {
+                    center: { latitude: center.lat, longitude: center.lng },
+                    radius: 1000,
+                  },
+                },
+                maxResultCount: 5,
+                minRating: 3.0,
+              });
+
+              if (response.places && response.places.length > 0) {
+                const place = response.places[0];
+                const marker = addMarker(mapInstance.map, {
+                  position: {
+                    lat: place.location.latitude,
+                    lng: place.location.longitude,
+                  },
+                  title: place.displayName?.text || 'Nearby Place',
+                });
+                setMarkers([...markers, marker]);
+                setStatus(
+                  `✅ NEW API Found nearby: ${place.displayName?.text || 'Place'} (Rating: ${place.rating || 'N/A'})`
+                );
+              } else {
+                setStatus('❌ No nearby places found via NEW API');
+              }
+            } catch (error) {
+              setStatus(`❌ NEW API nearby search failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'placesNewClient.placeDetails',
+          description: 'Get enhanced place details',
+          action: async () => {
+            if (!placesNewClient) return;
+            try {
+              setStatus('🚀 Getting enhanced place details via NEW API...');
+              const response = await placesNewClient.placeDetails({
+                placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4', // Times Square
+              });
+
+              const place = response;
+              setStatus(
+                `✅ NEW API Place Details: ${place.displayName?.text || 'Place'} - ${place.formattedAddress || 'N/A'} (Rating: ${place.rating || 'N/A'})`
+              );
+            } catch (error) {
+              setStatus(`❌ NEW API place details failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'placesNewClient.autocomplete',
+          description: 'Enhanced autocomplete with better suggestions',
+          action: async () => {
+            if (!placesNewClient) return;
+            try {
+              setStatus('🚀 Getting autocomplete suggestions via NEW API...');
+              const response = await placesNewClient.autocomplete({
+                input: 'restaurants in',
+                locationBias: {
+                  circle: {
+                    center: { latitude: 40.7128, longitude: -74.006 },
+                    radius: 1000,
+                  },
+                },
+              });
+
+              if (response.suggestions && response.suggestions.length > 0) {
+                const suggestion = response.suggestions[0];
+                setStatus(
+                  `✅ NEW API Autocomplete: ${suggestion.placePrediction?.text?.text || 'Suggestion'}`
+                );
+              } else {
+                setStatus('❌ No autocomplete suggestions found via NEW API');
+              }
+            } catch (error) {
+              setStatus(`❌ NEW API autocomplete failed: ${error.message}`);
+            }
+          },
+        },
+        {
+          name: 'placesNewClient.buildPhotoUrl',
+          description: 'Build photo URL for place photos',
+          action: () => {
+            if (!placesNewClient) return;
+            try {
+              const photoUrl = placesNewClient.buildPhotoUrl('photos/123', {
+                maxWidthPx: 400,
+                maxHeightPx: 300,
+              });
+              setStatus(`✅ NEW API Photo URL: ${photoUrl}`);
+            } catch (error) {
+              setStatus(`❌ NEW API photo URL failed: ${error.message}`);
             }
           },
         },

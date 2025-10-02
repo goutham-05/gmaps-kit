@@ -7,7 +7,7 @@ export const HooksSection: React.FC = () => (
     <div className="mb-8">
       <h2 className="text-3xl font-bold text-gray-900 mb-4">React Hooks</h2>
       <p className="text-lg text-gray-600">
-        All 19 specialized hooks for Google Maps integration in React
+        All 20 specialized hooks for Google Maps integration in React
         applications.
       </p>
     </div>
@@ -113,7 +113,7 @@ const result = await geocode({
         <div className="grid gap-4 md:grid-cols-2">
           <SectionCard
             title="usePlaces"
-            description="Places API integration for search and details"
+            description="Legacy Places API integration for search and details"
           >
             <CodeSnippet
               code={`const { textSearch, nearbySearch, placeDetails, isLoading } = usePlaces({
@@ -123,6 +123,27 @@ const result = await geocode({
 const results = await textSearch({
   query: 'coffee in Seattle',
   type: 'cafe',
+});`}
+            />
+          </SectionCard>
+
+          <SectionCard
+            title="usePlacesNew"
+            description="🚀 New Places API (New) with enhanced CORS support"
+          >
+            <CodeSnippet
+              code={`const { textSearch, nearbySearch, placeDetails, isLoading } = usePlacesNew({
+  apiKey: 'YOUR_API_KEY',
+});
+
+const results = await textSearch({
+  textQuery: 'coffee in Seattle',
+  locationBias: {
+    circle: {
+      center: { latitude: 47.6062, longitude: -122.3321 },
+      radius: 1000,
+    },
+  },
 });`}
             />
           </SectionCard>

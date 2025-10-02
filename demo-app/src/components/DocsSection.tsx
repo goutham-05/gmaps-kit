@@ -61,7 +61,7 @@ export const DocsSection: React.FC = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              Hooks (19)
+              Hooks (20)
             </button>
             <button
               onClick={() => setActiveSection('components')}

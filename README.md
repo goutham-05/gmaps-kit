@@ -15,6 +15,7 @@ The demo showcases all features including maps, geocoding, directions, and place
 - **Map initialization** - Simple map creation with typed options
 - **Markers & InfoWindows** - Easy marker management
 - **Places Autocomplete** - Places API integration
+- **Places API (New)** - Enhanced Places API with better CORS support
 - **Geocoding** - Address ↔ coordinates conversion
 - **Directions** - Route planning and navigation
 - **Distance Matrix** - Calculate distances between multiple points
@@ -25,7 +26,7 @@ The demo showcases all features including maps, geocoding, directions, and place
 ## 📦 Packages
 
 - `@gmaps-kit/core` - Framework-agnostic core utilities
-- `@gmaps-kit/react` - React wrapper (coming soon)
+- `@gmaps-kit/react` - React hooks and components
 - `@gmaps-kit/vue` - Vue wrapper (coming soon)
 - `@gmaps-kit/angular` - Angular wrapper (coming soon)
 
@@ -126,6 +127,77 @@ const directions = await getDirectionsAsync({
 // Render on map
 const directionsRenderer = renderDirections(mapInstance.map, directions);
 ```
+
+### 7. Places API (New) - Enhanced Features
+
+```typescript
+import { PlacesNewClient } from '@gmaps-kit/core';
+
+// Initialize the new Places API client
+const placesNewClient = new PlacesNewClient({
+  apiKey: 'YOUR_API_KEY',
+  // No baseUrl needed - direct API calls with better CORS support!
+});
+
+// Text search with enhanced data
+const textResults = await placesNewClient.textSearch({
+  textQuery: 'restaurants in New York',
+  locationBias: {
+    circle: {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radius: 1000,
+    },
+  },
+  maxResultCount: 10,
+  minRating: 4.0,
+});
+
+// Nearby search with better filtering
+const nearbyResults = await placesNewClient.nearbySearch({
+  includedTypes: ['restaurant', 'cafe'],
+  locationRestriction: {
+    circle: {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radius: 1000,
+    },
+  },
+  maxResultCount: 10,
+  minRating: 4.0,
+});
+
+// Get detailed place information
+const placeDetails = await placesNewClient.placeDetails({
+  placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
+});
+
+// Place autocomplete
+const autocompleteResults = await placesNewClient.autocomplete({
+  input: 'restaurants in',
+  locationBias: {
+    circle: {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radius: 1000,
+    },
+  },
+});
+
+// Build photo URL
+const photoUrl = placesNewClient.buildPhotoUrl('photos/123', {
+  maxWidthPx: 400,
+  maxHeightPx: 300,
+});
+```
+
+### Key Advantages of Places API (New)
+
+| Feature            | Legacy API        | New API (New)              |
+| ------------------ | ----------------- | -------------------------- |
+| **CORS Support**   | ❌ Requires proxy | ✅ Direct browser requests |
+| **Request Format** | Query parameters  | JSON body                  |
+| **Authentication** | API key in URL    | API key in header          |
+| **Data Quality**   | Basic             | Enhanced with more fields  |
+| **Error Handling** | Limited           | Comprehensive              |
+| **Rate Limiting**  | Basic             | Advanced                   |
 
 ### 7. Street View
 
